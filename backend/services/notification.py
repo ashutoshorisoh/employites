@@ -1,0 +1,134 @@
+import logging
+import urllib.request
+import json
+from backend.core.config import settings
+
+logger = logging.getLogger(__name__)
+
+class NotificationService:
+    """
+    Handles system notifications (sending email OTPs and confirmations) via Resend.
+    Gracefully falls back to mock console prints if the Resend API key is missing.
+    """
+
+    def _send_resend_email(self, to_email: str, subject: str, html_content: str) -> bool:
+        """
+        Helper method to dispatch an email via Resend API.
+        """
+        api_key = settings.RESEND_API
+        if not api_key or api_key == "#reqd key":
+            return False
+            
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        body = {
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": to_email,
+            "subject": subject,
+            "html": html_content
+        }
+        
+        try:
+            req = urllib.request.Request(
+                url, 
+                data=json.dumps(body).encode("utf-8"), 
+                headers=headers, 
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_body = response.read().decode("utf-8")
+                logger.info(f"Resend email dispatched successfully: {res_body}")
+                return True
+        except Exception as e:
+            logger.error(f"Failed to dispatch email via Resend API: {str(e)}")
+            return False
+
+    async def send_otp_email(self, email: str, otp: str) -> bool:
+        """
+        Dispatches verification OTP via Resend. Fallback to mock log print.
+        """
+        subject = "Skreener - Verification Code"
+        html = f"""
+            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px;">
+                <h2 style="color: #6C5DD3;">Skreener Auth</h2>
+                <p>Verify your sign-in details using the 6-digit confirmation code below:</p>
+                <div style="background: #F4F6F8; padding: 15px; text-align: center; border-radius: 5px; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #2D3748;">
+                    {otp}
+                </div>
+                <p style="color: #718096; font-size: 12px; margin-top: 20px;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+            </div>
+        """
+        
+        dispatched = self._send_resend_email(email, subject, html)
+        if dispatched:
+            return True
+            
+        # Mock Fallback Console print
+        print("\n" + "=" * 60)
+        print(f"📬  MOCK EMAIL DELIVERY SERVICE (Resend Bypass)")
+        print(f"To:      {email}")
+        print(f"Subject: {subject}")
+        print(f"Code:    {otp}")
+        print("=" * 60 + "\n")
+        return True
+
+    async def send_submission_completed_email(self, email: str, job_title: str) -> bool:
+        """
+        Dispatches completion email via Resend. Fallback to mock log print.
+        """
+        subject = "Skreener - Assessment Review Finalized"
+        html = f"""
+            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px;">
+                <h2 style="color: #00F0FF;">Skreener Review</h2>
+                <p>Hello,</p>
+                <p>Your asynchronous interview screening responses for the role <strong>{job_title}</strong> have been evaluated successfully.</p>
+                <p>The recruiter dashboard has been updated with your verbal transcripts and rating metrics.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+                <p style="color: #a0aec0; font-size: 11px;">Powered by Skreener AI Engine.</p>
+            </div>
+        """
+        
+        dispatched = self._send_resend_email(email, subject, html)
+        if dispatched:
+            return True
+            
+        print("\n" + "=" * 60)
+        print(f"📬  MOCK EMAIL DELIVERY SERVICE (Resend Bypass)")
+        print(f"To:      {email}")
+        print(f"Subject: {subject}")
+        print(f"Body:    Your interview for '{job_title}' has been analyzed successfully.")
+        print("=" * 60 + "\n")
+        return True
+
+    async def send_welcome_email(self, email: str, name: str) -> bool:
+        """
+        Dispatches welcome email via Resend. Fallback to mock log print.
+        """
+        subject = "Welcome to Skreener! 🚀"
+        html = f"""
+            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px;">
+                <h2 style="color: #6C5DD3;">Welcome to Skreener!</h2>
+                <p>Hi <strong>{name}</strong>,</p>
+                <p>Thank you for registering your recruiter profile. You can now post job assessments and analyze candidate telemetry reports.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+                <p style="color: #a0aec0; font-size: 11px;">Skreener Onboarding Team.</p>
+            </div>
+        """
+        
+        dispatched = self._send_resend_email(email, subject, html)
+        if dispatched:
+            return True
+            
+        print("\n" + "=" * 60)
+        print(f"📬  MOCK EMAIL DELIVERY SERVICE (Resend Bypass)")
+        print(f"To:      {email}")
+        print(f"Subject: {subject}")
+        print(f"Body:    Hi {name},\n         Thank you for registering. You can now post jobs and assess candidates.")
+        print("=" * 60 + "\n")
+        return True
+
+notification_service = NotificationService()
