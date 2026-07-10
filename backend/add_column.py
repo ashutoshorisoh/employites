@@ -1,11 +1,16 @@
 import psycopg2
 import os
+import sys
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from local .env
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(backend_dir, ".env"))
 
-url = os.environ.get("DATABASE_URL")
+url = os.getenv("DATABASE_URL")
+if not url or url == "#reqd key":
+    print("Error: DATABASE_URL not set in environment.")
+    sys.exit(1)
 
 try:
     conn = psycopg2.connect(url)
