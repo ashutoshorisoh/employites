@@ -7,12 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        darkBg: '#09090b',
-        darkCard: 'rgba(17, 17, 17, 0.7)',
-        accentPurple: '#8b5cf6',
-        accentCyan: '#06b6d4',
-        accentPink: '#ec4899',
-        borderGlow: 'rgba(139, 92, 246, 0.15)',
+        darkBg: '#08080a',
+        darkCard: 'rgba(13, 13, 16, 0.7)',
+        accentPurple: '#f97316', // Aesthetic Orange
+        accentCyan: '#e05315',   // Dark Orange
+        accentPink: '#ea580c',   // Warm Coral Orange
+        borderGlow: 'rgba(249, 115, 22, 0.12)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

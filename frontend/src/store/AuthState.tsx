@@ -48,6 +48,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           const existingUser = storedUserStr ? JSON.parse(storedUserStr) : {};
           const mergedUser: User = {
             ...existingUser,
+            ...userData,
             id: userData.id,
             email: userData.email,
             role: userData.role as UserRole,

@@ -41,8 +41,17 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             detail="Invalid token: malformed subject ID",
         )
 
-    # Fetch user details dynamically from the database proxy
-    user = db.users.get(user_uuid)
+    # Fetch user details dynamically from the database proxy based on token role
+    role = payload.get("role")
+    if role == "candidate":
+        user = db.candidates.get(user_uuid)
+        if user:
+            # Candidate structure has first_name / last_name, translate to name/role
+            user["role"] = "candidate"
+            user["name"] = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() or "Candidate"
+    else:
+        user = db.users.get(user_uuid)
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -145,6 +154,10 @@ async def register_user(payload: UserRegister):
         "password_hash": hashed_pwd,
         "role": role,
         "name": payload.name.strip(),
+        "is_subscribed": False,
+        "plan_name": "free",
+        "subscription_status": "inactive",
+        "subscription_ends_at": None,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc)
     }
@@ -379,6 +392,10 @@ async def verify_otp(payload: OTPVerify):
             "password_hash": hash_password(uuid.uuid4().hex[:12]),
             "role": role,
             "name": email.split('@')[0].toUpperCase() if hasattr(email.split('@')[0], 'toUpperCase') else email.split('@')[0].upper(),
+            "is_subscribed": False,
+            "plan_name": "free",
+            "subscription_status": "inactive",
+            "subscription_ends_at": None,
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc)
         }
@@ -408,5 +425,9 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "id": str(current_user["id"]),
         "email": current_user["email"],
         "role": current_user["role"],
-        "name": current_user.get("name")
+        "name": current_user.get("name"),
+        "is_subscribed": current_user.get("is_subscribed", False),
+        "plan_name": current_user.get("plan_name", "free"),
+        "subscription_status": current_user.get("subscription_status", "inactive"),
+        "subscription_ends_at": current_user.get("subscription_ends_at").isoformat() if current_user.get("subscription_ends_at") and hasattr(current_user.get("subscription_ends_at"), "isoformat") else current_user.get("subscription_ends_at")
     }

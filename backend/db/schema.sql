@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'recruiter', -- 'admin', 'recruiter', 'candidate'
     name VARCHAR(100),
+    is_subscribed BOOLEAN DEFAULT FALSE,
+    plan_name VARCHAR(50) DEFAULT 'free',
+    subscription_status VARCHAR(50) DEFAULT 'inactive',
+    subscription_ends_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
