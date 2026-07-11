@@ -1,5 +1,7 @@
 import os
 import sys
+import asyncio
+import urllib.request
 
 # Add parent directory to sys.path to support running from within the backend directory
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,7 +30,12 @@ app = FastAPI(
 )
 
 # Configure CORS Middleware (requires explicit origins when allow_credentials=True)
-origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000")
+origins_str = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,"
+    "http://localhost:8000,http://127.0.0.1:8000,"
+    "https://employites.com,https://www.employites.com"
+)
 origins = [origin.strip() for origin in origins_str.split(",") if origin.strip()]
 
 app.add_middleware(
@@ -69,7 +76,40 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
+async def ping_self_loop():
+    # Wait for the server to be fully initialized and listen before starting pings
+    await asyncio.sleep(10)
+    ping_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("SELF_PING_URL")
+    if not ping_url:
+        logger.warning("RENDER_EXTERNAL_URL or SELF_PING_URL environment variables not set. Keep-alive self-ping task will be inactive.")
+        return
+    
+    logger.info(f"Keep-alive self-ping task initialized. Target: {ping_url}")
+    while True:
+        try:
+            def sync_ping():
+                try:
+                    req = urllib.request.Request(
+                        ping_url,
+                        headers={"User-Agent": "EmployitesKeepAlive/1.0"}
+                    )
+                    with urllib.request.urlopen(req, timeout=15) as response:
+                        return response.getcode()
+                except Exception as e:
+                    return f"Failed: {str(e)}"
+            
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(None, sync_ping)
+            logger.info(f"Keep-alive self-ping to {ping_url} -> result status: {result}")
+        except Exception as e:
+            logger.error(f"Keep-alive self-ping encountered task loop error: {str(e)}")
+        
+        # Sleep for 10 minutes (600 seconds)
+        await asyncio.sleep(600)
+
 # Optional startup log check for keys
 @app.on_event("startup")
 async def startup_event():
     logger.info("Initializing Employites FastAPI Services...")
+    # Start the keep-alive background task to prevent Render spin-down
+    asyncio.create_task(ping_self_loop())
