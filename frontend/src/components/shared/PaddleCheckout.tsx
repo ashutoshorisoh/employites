@@ -29,9 +29,9 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
   if (!isOpen) return null;
 
   const plans = [
-    { id: 'starter', name: 'Starter Tier', price: '$49/mo', seats: 3, interviews: 50 },
-    { id: 'grow', name: 'Grow Professional', price: '$129/mo', seats: 10, interviews: 250, popular: true },
-    { id: 'enterprise', name: 'Enterprise Scale', price: '$299/mo', seats: 99, interviews: 999 },
+    { id: 'starter', name: 'Starter Tier', price: '$79/mo', seats: 5, interviews: 120 },
+    { id: 'grow', name: 'Grow Professional', price: '$129/mo', seats: 15, interviews: 200, popular: true },
+    { id: 'enterprise', name: 'Enterprise Scale', price: '$199/mo', seats: 50, interviews: 300 },
   ];
 
   const handleSelectPlan = (plan: typeof plans[0]) => {
@@ -50,22 +50,22 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 overflow-y-auto">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+      <div
+        className="fixed inset-0 bg-black/85 backdrop-blur-sm"
         onClick={onClose}
       ></div>
 
       {/* Modal Container */}
-      <div className="relative glass-panel rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl z-10">
+      <div className="relative glass-panel rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl z-10 my-auto">
         {/* Colorful Gradient Border top */}
         <div className="w-full h-1.5 bg-gradient-to-r from-accentPurple via-accentCyan to-accentPink"></div>
 
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-500 hover:text-white hover:bg-zinc-900/60 p-1.5 rounded-lg transition-all"
+          className="absolute top-4 right-4 text-zinc-200 hover:text-white hover:bg-zinc-900/60 p-1.5 rounded-lg transition-all z-20"
         >
           <X className="w-5 h-5" />
         </button>
@@ -73,8 +73,8 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center p-20 text-center">
             <Loader2 className="w-12 h-12 text-accentCyan animate-spin mb-4" />
-            <h3 className="text-lg font-bold text-gray-200">Contacting Paddle Core billing interfaces...</h3>
-            <p className="text-xs text-gray-500 mt-1">Establishing isolated token-based checkout handshake</p>
+            <h3 className="text-lg font-bold text-gray-200">Loading plans...</h3>
+            <p className="text-xs text-gray-500 mt-1">Just a moment</p>
           </div>
         )}
 
@@ -89,49 +89,49 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {plans.map((p) => (
-                <div 
+                <div
                   key={p.id}
-                  className={`glass-panel rounded-xl p-5 flex flex-col justify-between border relative transition-all duration-300 ${
-                    p.popular 
-                      ? 'border-accentPurple/50 bg-accentPurple/5 hover:border-accentPurple/80 shadow-[0_0_20px_rgba(139,92,246,0.1)]' 
-                      : 'border-zinc-800 hover:border-zinc-700'
-                  }`}
+                  className={`rounded-xl p-5 flex flex-col justify-between border relative transition-all duration-300 ${p.popular
+                      ? 'border-accentPurple/50 bg-accentPurple/5 hover:border-accentPurple/80 shadow-[0_0_20px_rgba(249,115,22,0.1)]'
+                      : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
+                    }`}
                 >
                   {p.popular && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accentPurple text-[10px] uppercase font-bold text-white px-2.5 py-0.5 rounded-full tracking-wider">
                       Most Selected
                     </span>
                   )}
+
+                  {/* Plan header — always visible at top */}
                   <div>
-                    <h3 className="font-bold text-gray-200 text-md">{p.name}</h3>
-                    <div className="mt-2 flex items-baseline">
+                    <h3 className="font-bold text-white text-base">{p.name}</h3>
+                    <div className="mt-2 flex items-baseline gap-1">
                       <span className="text-3xl font-extrabold text-white tracking-tight">{p.price.split('/')[0]}</span>
-                      <span className="text-xs text-gray-500 ml-1">/mo</span>
+                      <span className="text-xs text-gray-500">/mo</span>
                     </div>
 
-                    <ul className="mt-6 space-y-3.5 text-xs text-gray-400">
+                    <ul className="mt-5 space-y-3 text-xs text-gray-400">
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-400" /> {p.seats} recruiter seats
+                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" /> {p.seats} recruiter seats
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-400" /> {p.interviews} async video screenings/mo
+                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" /> {p.interviews} screenings / month
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-400" /> Automatic Gemini evaluations
+                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" /> AI-powered evaluations
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-400" /> R2 Video storage included
+                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" /> Secure video storage
                       </li>
                     </ul>
                   </div>
 
                   <button
                     onClick={() => handleSelectPlan(p)}
-                    className={`glow-btn w-full mt-8 py-2.5 rounded-lg text-xs font-bold transition-all ${
-                      p.popular
+                    className={`glow-btn w-full mt-6 py-2.5 rounded-lg text-xs font-bold transition-all ${p.popular
                         ? 'bg-gradient-to-r from-accentPurple to-accentPink text-white hover:opacity-95'
                         : 'bg-zinc-800 hover:bg-zinc-700 text-gray-200'
-                    }`}
+                      }`}
                   >
                     Select Plan
                   </button>
@@ -139,8 +139,8 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
               ))}
             </div>
 
-            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-zinc-500">
-              <Shield className="w-4 h-4 text-accentCyan" /> Encrypted secure payment pipelines powered by Paddle.
+            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-zinc-200">
+              <Shield className="w-4 h-4 text-accentCyan" /> Secure payments powered by Paddle.
             </div>
           </div>
         )}
@@ -148,8 +148,8 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
         {step === 'payment' && selectedPlan && (
           <div className="p-8 max-w-md mx-auto">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-bold text-white">Paddle Billing Check</h3>
-              <p className="text-xs text-gray-400 mt-1">Completing token verification step</p>
+              <h3 className="text-lg font-bold text-white">Confirm your plan</h3>
+              <p className="text-xs text-gray-400 mt-1">Review your selection before completing checkout</p>
             </div>
 
             <div className="bg-zinc-950/60 border border-zinc-800 rounded-xl p-4 mb-6">
@@ -170,7 +170,7 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
             >
               {paymentProcessing ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Transmitting Token...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Processing...
                 </>
               ) : (
                 <>
@@ -182,7 +182,7 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
             <button
               onClick={() => setStep('select')}
               disabled={paymentProcessing}
-              className="w-full mt-3 py-2 bg-transparent text-xs text-zinc-500 hover:text-white font-semibold transition-colors"
+              className="w-full mt-3 py-2 bg-transparent text-xs text-zinc-200 hover:text-white font-semibold transition-colors"
             >
               Go Back
             </button>
@@ -196,7 +196,7 @@ export const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({ isOpen, onClose,
             </div>
             <h3 className="text-lg font-extrabold text-white">Purchase Completed</h3>
             <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-              Your billing status is updated. We've enqueued workspace updates on the backend webhook receiver.
+              Your subscription is now active. You can start screening candidates right away.
             </p>
             <button
               onClick={onClose}

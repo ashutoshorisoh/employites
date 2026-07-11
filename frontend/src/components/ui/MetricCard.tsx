@@ -22,39 +22,39 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     switch (glowColor) {
       case 'purple':
         return {
-          glowLine: 'from-purple-500/60 to-indigo-600/40',
-          shadow: 'hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] hover:border-purple-500/30',
-          iconBg: 'bg-purple-950/50 text-purple-400 border-purple-500/20',
+          glowLine: 'from-orange-400 to-orange-600',
+          shadow: 'hover:shadow-[0_8px_30px_rgba(255,107,53,0.06)] hover:border-orange-500/25',
+          iconBg: 'bg-orange-50 text-accentPurple border-orange-200/50',
         };
       case 'cyan':
         return {
-          glowLine: 'from-cyan-500/60 to-blue-600/40',
-          shadow: 'hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:border-cyan-500/30',
-          iconBg: 'bg-cyan-950/50 text-cyan-400 border-cyan-500/20',
+          glowLine: 'from-cyan-400 to-cyan-600',
+          shadow: 'hover:shadow-[0_8px_30px_rgba(6,182,212,0.06)] hover:border-cyan-500/25',
+          iconBg: 'bg-cyan-50 text-cyan-600 border-cyan-200/50',
         };
       case 'pink':
         return {
-          glowLine: 'from-pink-500/60 to-rose-600/40',
-          shadow: 'hover:shadow-[0_0_20px_rgba(236,72,153,0.15)] hover:border-pink-500/30',
-          iconBg: 'bg-pink-950/50 text-pink-400 border-pink-500/20',
+          glowLine: 'from-rose-400 to-rose-600',
+          shadow: 'hover:shadow-[0_8px_30px_rgba(244,63,94,0.06)] hover:border-rose-500/25',
+          iconBg: 'bg-rose-50 text-rose-600 border-rose-200/50',
         };
       case 'emerald':
         return {
-          glowLine: 'from-emerald-500/60 to-teal-600/40',
-          shadow: 'hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:border-emerald-500/30',
-          iconBg: 'bg-emerald-950/50 text-emerald-400 border-emerald-500/20',
+          glowLine: 'from-emerald-400 to-emerald-600',
+          shadow: 'hover:shadow-[0_8px_30px_rgba(16,185,129,0.06)] hover:border-emerald-500/25',
+          iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/50',
         };
       case 'amber':
         return {
-          glowLine: 'from-amber-500/60 to-yellow-600/40',
-          shadow: 'hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:border-amber-500/30',
-          iconBg: 'bg-amber-950/50 text-amber-400 border-amber-500/20',
+          glowLine: 'from-amber-400 to-amber-600',
+          shadow: 'hover:shadow-[0_8px_30px_rgba(245,158,11,0.06)] hover:border-amber-500/25',
+          iconBg: 'bg-amber-50 text-amber-600 border-amber-200/50',
         };
       default:
         return {
-          glowLine: 'from-zinc-800 to-zinc-900',
-          shadow: 'hover:border-zinc-700',
-          iconBg: 'bg-zinc-900 text-zinc-400 border-zinc-800',
+          glowLine: 'from-zinc-300 to-zinc-400',
+          shadow: 'hover:border-zinc-300',
+          iconBg: 'bg-zinc-100 text-zinc-650 border-zinc-200',
         };
     }
   };
@@ -68,10 +68,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
       <div className="flex justify-between items-start">
         <div>
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
+          <span className="text-xs font-semibold text-zinc-200 uppercase tracking-wider block">
             {title}
           </span>
-          <span className="text-2xl md:text-3xl font-extrabold text-gray-100 tracking-tight block mt-2">
+          <span className="text-2xl md:text-3xl font-extrabold text-zinc-100 tracking-tight block mt-2">
             {value}
           </span>
         </div>
@@ -83,10 +83,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
       {change && (
         <div className="mt-4 flex items-center gap-1.5">
-          <span className={`text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+          <span className={`text-xs font-bold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
             {change}
           </span>
-          <span className="text-xs text-gray-500 font-medium">vs previous period</span>
+          <span className="text-xs text-zinc-200 font-medium">vs previous period</span>
         </div>
       )}
     </div>

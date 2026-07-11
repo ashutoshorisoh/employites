@@ -222,15 +222,15 @@ export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUp
         {status === 'initializing' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/90 text-center p-4">
             <Loader2 className="w-10 h-10 text-accentPurple animate-spin mb-3" />
-            <p className="text-sm text-gray-300 font-medium">Configuring stream & media pipelines...</p>
-            <p className="text-xs text-gray-500 mt-1">Requesting audio/video interface permissions</p>
+            <p className="text-sm text-gray-300 font-medium">Setting up your camera...</p>
+            <p className="text-xs text-gray-500 mt-1">Please allow camera and microphone access</p>
           </div>
         )}
 
         {status === 'uploading' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/95 text-center p-6">
             <UploadCloud className="w-12 h-12 text-accentCyan animate-bounce mb-3" />
-            <h4 className="text-md font-bold text-gray-200">Streaming response to Cloudflare R2...</h4>
+            <h4 className="text-md font-bold text-gray-200">Saving your response...</h4>
             <div className="w-64 bg-zinc-800 h-2 rounded-full overflow-hidden mt-4 border border-zinc-700">
               <div 
                 className="bg-gradient-to-r from-accentPurple to-accentCyan h-full transition-all duration-300"
@@ -244,15 +244,15 @@ export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUp
         {status === 'completed' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/90 text-center p-4">
             <CheckCircle className="w-14 h-14 text-emerald-500 mb-3 animate-bounce" />
-            <h4 className="text-lg font-bold text-gray-100">Upload Finalized</h4>
-            <p className="text-sm text-gray-400 mt-1">Answer stored securely. Gemini evaluator enqueued.</p>
+            <h4 className="text-lg font-bold text-gray-100">Response Saved</h4>
+            <p className="text-sm text-gray-400 mt-1">Your answer has been submitted successfully.</p>
           </div>
         )}
 
         {status === 'error' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/95 text-center p-6">
             <AlertTriangle className="w-12 h-12 text-rose-500 mb-3" />
-            <h4 className="text-md font-bold text-rose-400">Media Pipeline Error</h4>
+            <h4 className="text-md font-bold text-rose-400">Something went wrong</h4>
             <p className="text-xs text-gray-300 max-w-sm mt-2 leading-relaxed">{errorMessage}</p>
             <button 
               onClick={retakeVideo}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { KanbanBoard, CandidateCard } from '../components/ui/KanbanBoard';
 import { MetricCard } from '../components/ui/MetricCard';
-import { 
-  Users, Video, ShieldAlert, Award, Star, Search, PlusCircle, 
-  FileText, Clipboard, ExternalLink, X, Send, Play, CheckCircle, ChevronRight, ChevronLeft, AlertTriangle, Loader2, Edit, Trash2, Lock, Unlock, Eye, RefreshCw 
+import {
+  Users, Video, ShieldAlert, Award, Star, Search, PlusCircle,
+  FileText, Clipboard, ExternalLink, X, Send, Play, CheckCircle, ChevronRight, ChevronLeft, AlertTriangle, Loader2, Edit, Trash2, Lock, Unlock, Eye, RefreshCw, CreditCard
 } from 'lucide-react';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, "");
@@ -50,7 +50,7 @@ export const RecruiterDashboard: React.FC = () => {
   const [jobSubTab, setJobSubTab] = useState<'candidates' | 'cheatflags'>('candidates');
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -103,14 +103,14 @@ export const RecruiterDashboard: React.FC = () => {
       const subRes = await fetch(`${API_BASE_URL}/submissions`, { headers, credentials: 'include' });
       if (subRes.ok) {
         const fetchedSubs = await subRes.json();
-        
+
         // Map submissions to Leaderboard Candidates with jobId and cheating flags
         const mappedCandidates = fetchedSubs.map((s: any) => {
           const feedback = s.ai_feedback || {};
           const summary = feedback.summary || 'AI evaluation enqueued. Processing responses.';
           const transcript = feedback.transcript || 'No transcript processed yet.';
           const alerts = feedback.weaknesses || [];
-          
+
           return {
             id: s.id,
             jobId: s.job_id,
@@ -171,7 +171,7 @@ export const RecruiterDashboard: React.FC = () => {
               const summary = feedback.summary || 'AI evaluation enqueued. Processing responses.';
               const transcript = feedback.transcript || 'No transcript processed yet.';
               const alerts = feedback.weaknesses || [];
-              
+
               return {
                 id: s.id,
                 jobId: s.job_id,
@@ -221,7 +221,7 @@ export const RecruiterDashboard: React.FC = () => {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     setAllCandidates(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
-    
+
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
     try {
@@ -357,7 +357,7 @@ export const RecruiterDashboard: React.FC = () => {
       }
 
       const savedJob = await res.json();
-      
+
       const newJob: Job = {
         id: savedJob.id,
         title: savedJob.title,
@@ -497,16 +497,16 @@ export const RecruiterDashboard: React.FC = () => {
   // Per-job metrics (only meaningful when a job is selected)
   const jobTotalEvaluations = jobCandidates.length;
   const jobAnomaliesCount = jobCandidates.filter(c => c.cheatingFlagged).length;
-  const jobAvgComm = jobCandidates.length > 0 
-    ? (jobCandidates.reduce((sum, c) => sum + c.scoreCommunication, 0) / jobCandidates.length).toFixed(0) 
+  const jobAvgComm = jobCandidates.length > 0
+    ? (jobCandidates.reduce((sum, c) => sum + c.scoreCommunication, 0) / jobCandidates.length).toFixed(0)
     : '0';
-  const jobAvgTech = jobCandidates.length > 0 
-    ? (jobCandidates.reduce((sum, c) => sum + c.scoreTechnical, 0) / jobCandidates.length).toFixed(0) 
+  const jobAvgTech = jobCandidates.length > 0
+    ? (jobCandidates.reduce((sum, c) => sum + c.scoreTechnical, 0) / jobCandidates.length).toFixed(0)
     : '0';
 
   if (isLoading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-zinc-500">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-zinc-200">
         <Loader2 className="w-10 h-10 animate-spin text-accentPurple mb-3" />
         <p className="text-xs">Synchronizing recruiter metrics with Supabase database...</p>
       </div>
@@ -517,7 +517,7 @@ export const RecruiterDashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto px-6 py-8">
 
       {errorMsg && (
-        <div className="p-4 bg-rose-950/40 border border-rose-500/20 rounded-xl text-rose-400 text-xs font-semibold mb-6">
+        <div className="p-4 bg-rose-50 border border-rose-250 rounded-xl text-rose-800 text-xs font-semibold mb-6">
           {errorMsg}
         </div>
       )}
@@ -529,28 +529,26 @@ export const RecruiterDashboard: React.FC = () => {
         <div>
           <button
             onClick={() => { setSelectedJobId(null); setJobSubTab('candidates'); }}
-            className="flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-white mb-5 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-accentPurple mb-5 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" /> Back to All Jobs
           </button>
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <h2 className="text-lg font-extrabold text-white">{selectedJob.title}</h2>
-            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
-              selectedJob.isActive
-                ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
-                : 'bg-zinc-900 text-zinc-500 border-zinc-800'
-            }`}>
+            <h2 className="text-lg font-extrabold text-zinc-100">{selectedJob.title}</h2>
+            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${selectedJob.isActive
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/60'
+              : 'bg-zinc-900 text-zinc-200 border-zinc-800'
+              }`}>
               {selectedJob.isActive ? 'Active' : 'Closed'}
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono bg-zinc-950 border border-zinc-900 px-2 py-0.5 rounded">{selectedJob.token}</span>
-            <span className="text-[10px] text-zinc-500 font-bold">{jobCandidates.length} candidate{jobCandidates.length !== 1 ? 's' : ''}</span>
-            
+            <span className="text-[10px] text-zinc-200 font-mono bg-zinc-950 border border-zinc-900 px-2 py-0.5 rounded">{selectedJob.token}</span>
+            <span className="text-[10px] text-zinc-200 font-bold">{jobCandidates.length} candidate{jobCandidates.length !== 1 ? 's' : ''}</span>
+
             {/* Expiration and Closing Alerts */}
-            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg border ${
-              selectedJob.isActive
-                ? 'bg-orange-950/40 text-orange-400 border-orange-500/20'
-                : 'bg-zinc-900/60 text-zinc-400 border-zinc-800'
-            }`}>
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg border ${selectedJob.isActive
+              ? 'bg-orange-50 text-orange-850 border-orange-200/60'
+              : 'bg-zinc-900/60 text-zinc-400 border-zinc-800'
+              }`}>
               {(() => {
                 if (!selectedJob.isActive) return 'Closed';
                 if (!selectedJob.expires_at) return 'Closing in 3 days';
@@ -564,7 +562,7 @@ export const RecruiterDashboard: React.FC = () => {
             {selectedJob.isActive && (
               <button
                 onClick={() => handleCloseJob(selectedJob.id)}
-                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900 border border-rose-500/20 hover:border-rose-500/40 text-[10px] font-extrabold text-rose-400 hover:text-white rounded-lg transition-all"
+                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-[10px] font-extrabold text-rose-700 hover:text-rose-800 rounded-lg transition-all"
               >
                 Close Job Posting
               </button>
@@ -583,17 +581,15 @@ export const RecruiterDashboard: React.FC = () => {
           <div className="flex gap-1 bg-zinc-950/80 border border-zinc-900 rounded-xl p-1 w-fit mb-6">
             <button
               onClick={() => setJobSubTab('candidates')}
-              className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${
-                jobSubTab === 'candidates' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-white'
-              }`}
+              className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${jobSubTab === 'candidates' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-accentPurple'
+                }`}
             >
               Candidate Board
             </button>
             <button
               onClick={() => setJobSubTab('cheatflags')}
-              className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${
-                jobSubTab === 'cheatflags' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-white'
-              }`}
+              className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${jobSubTab === 'cheatflags' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-accentPurple'
+                }`}
             >
               Cheat Flags ({jobAnomaliesCount})
             </button>
@@ -607,7 +603,7 @@ export const RecruiterDashboard: React.FC = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-zinc-900 bg-zinc-950/60 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                        <tr className="border-b border-zinc-900 bg-zinc-950/60 text-[10px] font-bold text-zinc-200 uppercase tracking-widest">
                           <th className="py-4 px-6 text-center w-16">Rank</th>
                           <th className="py-4 px-6">Candidate</th>
                           <th className="py-4 px-6">Applied On</th>
@@ -627,114 +623,109 @@ export const RecruiterDashboard: React.FC = () => {
                           })
                           .map((c, index) => {
                             const avgScore = ((c.scoreTechnical + c.scoreCommunication) / 2).toFixed(0);
-                            const appliedTime = c.createdAt 
+                            const appliedTime = c.createdAt
                               ? new Date(c.createdAt).toLocaleString(undefined, {
-                                  dateStyle: 'medium',
-                                  timeStyle: 'short'
-                                })
+                                dateStyle: 'medium',
+                                timeStyle: 'short'
+                              })
                               : 'Pending';
 
                             return (
                               <tr key={c.id} className="hover:bg-zinc-900/20 transition-all group">
                                 <td className="py-4 px-6 text-center font-extrabold">
                                   {c.cheatingFlagged ? (
-                                    <span className="text-zinc-600 text-xs font-mono">-</span>
+                                    <span className="text-zinc-300 text-xs font-mono">-</span>
                                   ) : (
-                                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold border ${
-                                      index === 0 
-                                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_8px_rgba(249,115,22,0.1)]' 
-                                        : index === 1
+                                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold border ${index === 0
+                                      ? 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_8px_rgba(249,115,22,0.1)]'
+                                      : index === 1
                                         ? 'bg-zinc-800 text-zinc-300 border-zinc-700'
                                         : index === 2
-                                        ? 'bg-amber-950/20 text-amber-600 border-amber-900/40'
-                                        : 'bg-zinc-950 text-zinc-500 border-zinc-900'
-                                    }`}>
+                                          ? 'bg-amber-950/20 text-amber-600 border-amber-900/40'
+                                          : 'bg-zinc-950 text-zinc-200 border-zinc-900'
+                                      }`}>
                                       {index + 1}
                                     </span>
                                   )}
                                 </td>
                                 <td className="py-4 px-6">
                                   <div className="font-extrabold text-gray-200 group-hover:text-white transition-colors">{c.name}</div>
-                                  <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{c.email}</div>
+                                  <div className="text-[10px] text-zinc-200 font-mono mt-0.5">{c.email}</div>
                                 </td>
                                 <td className="py-4 px-6 text-zinc-400 font-medium">
                                   {appliedTime}
                                 </td>
                                 <td className="py-4 px-6 text-center">
                                   {c.status !== 'Completed' ? (
-                                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-extrabold uppercase border ${
-                                      c.status === 'Failed' 
-                                        ? 'bg-rose-950/40 text-rose-400 border-rose-500/20' 
-                                        : 'bg-zinc-950 text-zinc-500 border-zinc-900 animate-pulse'
-                                    }`}>
+                                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-extrabold uppercase border ${c.status === 'Failed'
+                                      ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
+                                      : 'bg-zinc-950 text-zinc-200 border-zinc-900 animate-pulse'
+                                      }`}>
                                       {c.status}
                                     </span>
                                   ) : (
                                     <div className="inline-flex flex-col items-center">
-                                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${
-                                        c.cheatingFlagged 
-                                          ? 'bg-rose-950/40 text-rose-400 border-rose-500/20' 
-                                          : parseInt(avgScore) >= 70
+                                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${c.cheatingFlagged
+                                        ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
+                                        : parseInt(avgScore) >= 70
                                           ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
                                           : 'bg-orange-950/40 text-orange-400 border-orange-500/20'
-                                      }`}>
+                                        }`}>
                                         {c.cheatingFlagged ? 'Flagged' : `${avgScore}%`}
                                       </span>
-                                      <span className="text-[8px] text-zinc-500 mt-1 font-mono">T: {c.scoreTechnical}% | C: {c.scoreCommunication}%</span>
+                                      <span className="text-[8px] text-zinc-200 mt-1 font-mono">T: {c.scoreTechnical}% | C: {c.scoreCommunication}%</span>
                                     </div>
                                   )}
                                 </td>
                                 <td className="py-4 px-6 text-center">
                                   {c.cheatingFlagged ? (
-                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-rose-950/40 border border-rose-500/20 text-[9px] font-extrabold text-rose-400 uppercase cursor-help group/tooltip relative">
-                                      <AlertTriangle className="w-3.5 h-3.5" /> Cheated
-                                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block bg-zinc-950 border border-zinc-800 text-zinc-300 text-[10px] p-3 rounded-lg w-56 text-left leading-normal shadow-2xl z-50 normal-case font-normal">
-                                        <p className="font-bold text-rose-400 mb-1">AI Audit Flagged Cheating:</p>
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-rose-50 border border-rose-200 text-[9px] font-extrabold text-rose-700 uppercase cursor-help group/tooltip relative">
+                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> Cheated
+                                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block bg-zinc-950 border border-zinc-900 text-zinc-300 text-[10px] p-3 rounded-lg w-56 text-left leading-normal shadow-2xl z-50 normal-case font-normal">
+                                        <p className="font-bold text-rose-600 mb-1">AI Audit Flagged Cheating:</p>
                                         {c.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}
                                       </div>
                                     </div>
                                   ) : c.status === 'Completed' ? (
-                                    <div className="inline-flex items-center gap-1.5 text-[9px] font-extrabold text-emerald-400 uppercase">
+                                    <div className="inline-flex items-center gap-1.5 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-250 px-2 py-0.5 rounded uppercase">
                                       <CheckCircle className="w-3.5 h-3.5" /> Verified
                                     </div>
                                   ) : (
-                                    <span className="text-zinc-600 text-xs font-mono">-</span>
+                                    <span className="text-zinc-300 text-xs font-mono">-</span>
                                   )}
                                 </td>
-                                <td className="py-4 px-6 text-right">
-                                  <div className="flex items-center justify-end gap-2">
-                                    <button
-                                      onClick={() => setSelectedCandidate(c as any)}
-                                      className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-extrabold text-zinc-300 hover:text-white rounded-lg transition-all"
-                                    >
-                                      AI Report
-                                    </button>
-                                    
-                                    {/* Ask Resume Trigger */}
-                                    {c.status === 'Completed' && (
-                                      <>
-                                        {c.candidateResumeUrl ? (
-                                          <button
-                                            onClick={() => handleDownloadResume(c.id)}
-                                            className="px-2.5 py-1.5 bg-emerald-950/40 border border-emerald-500/20 hover:border-emerald-500/40 text-[10px] font-extrabold text-emerald-400 hover:text-white rounded-lg transition-all flex items-center gap-1"
-                                          >
-                                            <FileText className="w-3 h-3" /> Resume
-                                          </button>
-                                        ) : c.resumeRequested ? (
-                                          <span className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-900 text-[10px] font-bold text-zinc-500 rounded-lg">
-                                            Requested
-                                          </span>
-                                        ) : !selectedJob.isActive ? (
-                                          <button
-                                            onClick={() => handleAskResume(c.id)}
-                                            className="px-2.5 py-1.5 bg-orange-950/40 border border-orange-500/20 hover:border-orange-500/40 text-[10px] font-extrabold text-orange-400 hover:text-white rounded-lg transition-all"
-                                          >
-                                            Ask Resume
-                                          </button>
-                                        ) : null}
-                                      </>
-                                    )}
-                                  </div>
+                                <td className="py-3.5 text-right flex items-center justify-end gap-2 pr-2">
+                                  <button
+                                    onClick={() => setSelectedCandidate(c as any)}
+                                    className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-extrabold text-zinc-300 hover:text-accentPurple rounded-lg transition-all"
+                                  >
+                                    Review
+                                  </button>
+
+                                  {/* Ask Resume Trigger */}
+                                  {c.status === 'Completed' && (
+                                    <>
+                                      {c.candidateResumeUrl ? (
+                                        <button
+                                          onClick={() => handleDownloadResume(c.id)}
+                                          className="px-2.5 py-1.5 bg-emerald-950/40 border border-emerald-500/20 hover:border-emerald-500/40 text-[10px] font-extrabold text-emerald-400 hover:text-white rounded-lg transition-all flex items-center gap-1"
+                                        >
+                                          <FileText className="w-3 h-3" /> Resume
+                                        </button>
+                                      ) : c.resumeRequested ? (
+                                        <span className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-900 text-[10px] font-bold text-zinc-200 rounded-lg">
+                                          Requested
+                                        </span>
+                                      ) : !selectedJob.isActive ? (
+                                        <button
+                                          onClick={() => handleAskResume(c.id)}
+                                          className="px-2.5 py-1.5 bg-orange-950/40 border border-orange-500/20 hover:border-orange-500/40 text-[10px] font-extrabold text-orange-400 hover:text-white rounded-lg transition-all"
+                                        >
+                                          Ask Resume
+                                        </button>
+                                      ) : null}
+                                    </>
+                                  )}
                                 </td>
                               </tr>
                             );
@@ -746,8 +737,8 @@ export const RecruiterDashboard: React.FC = () => {
               ) : (
                 <div className="glass-panel rounded-2xl p-10 text-center">
                   <Users className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-                  <p className="text-xs text-zinc-500">No candidate submissions for this job yet.</p>
-                  <p className="text-[10px] text-zinc-600 mt-1">Share the invite code <span className="text-accentCyan font-mono font-bold">{selectedJob.token}</span> with candidates to start receiving responses.</p>
+                  <p className="text-xs text-zinc-200">No candidate submissions for this job yet.</p>
+                  <p className="text-[10px] text-zinc-300 mt-1">Share the invite code <span className="text-accentCyan font-mono font-bold">{selectedJob.token}</span> with candidates to start receiving responses.</p>
                 </div>
               )}
             </>
@@ -756,7 +747,7 @@ export const RecruiterDashboard: React.FC = () => {
           {/* Cheat Flags sub-tab */}
           {jobSubTab === 'cheatflags' && (
             <div className="glass-panel rounded-2xl p-6">
-              <h3 className="text-md font-bold text-gray-200 mb-4 flex items-center gap-2">
+              <h3 className="text-md font-bold text-zinc-100 mb-4 flex items-center gap-2">
                 Security Flags for {selectedJob.title} <ShieldAlert className="w-5 h-5 text-amber-500" />
               </h3>
               <div className="space-y-4">
@@ -764,18 +755,18 @@ export const RecruiterDashboard: React.FC = () => {
                   <div key={c.id} className="p-4 bg-zinc-950/60 border border-zinc-900 rounded-xl flex items-start gap-4">
                     <AlertTriangle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-gray-200">{c.name} — {c.role}</h4>
+                      <h4 className="text-xs font-bold text-zinc-100">{c.name} — {c.role}</h4>
                       <ul className="list-disc pl-4 text-[11px] text-zinc-400 space-y-1">
                         {c.telemetryAlerts.map((alert, idx) => (
                           <li key={idx} className="text-rose-400 font-semibold">{alert}</li>
                         ))}
                       </ul>
-                      <span className="text-[10px] text-zinc-500 block pt-1">Telemetry Integrity Score: {c.scoreTelemetry * 10}/100</span>
+                      <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Integrity Score: {c.scoreTelemetry * 10}/100</span>
                     </div>
                   </div>
                 ))}
                 {jobCandidates.filter(c => c.telemetryAlerts.length > 0).length === 0 && (
-                  <p className="text-xs text-zinc-500">No security telemetry anomalies flagged for this job's screenings.</p>
+                  <p className="text-xs text-zinc-200">No security telemetry anomalies flagged for this job's screenings.</p>
                 )}
               </div>
             </div>
@@ -786,124 +777,128 @@ export const RecruiterDashboard: React.FC = () => {
       {/* Job Cards Grid (when no job is selected) */}
       {!selectedJobId && (
         <>
-        <div className="flex justify-end gap-3 mb-6">
-          <button
-            onClick={fetchDashboardData}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-zinc-950 border border-zinc-900 hover:border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white rounded-xl transition-all"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-accentCyan" /> Sync Board
-          </button>
-          <button
-            onClick={() => {
-              setCreatedJobToken(null);
-              setNewJobQuestions(['']);
-              setShowJobModal(true);
-            }}
-            className="glow-btn px-4.5 py-2.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl flex items-center gap-2"
-          >
-            <PlusCircle className="w-4 h-4" /> Post a New Job
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {jobs.map(job => {
-            const jobCount = allCandidates.filter(c => c.jobId === job.id).length;
-            return (
-              <div key={job.id} className="glass-panel rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
-                <div>
-                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-extrabold text-md text-gray-200">{job.title}</h3>
-                        <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
-                          job.isActive 
-                            ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20' 
-                            : 'bg-zinc-900 text-zinc-500 border-zinc-800'
-                        }`}>
-                          {job.isActive ? 'Active' : 'Closed'}
-                        </span>
+          <div className="flex justify-end gap-3 mb-6">
+            <button
+              onClick={() => {
+                window.location.href = '/pricing';
+              }}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-zinc-950 border border-zinc-900 hover:border-zinc-800 text-xs font-bold text-zinc-300 hover:text-accentPurple rounded-xl transition-all"
+            >
+              <CreditCard className="w-3.5 h-3.5" /> Buy Plan
+            </button>
+            <button
+              onClick={() => {
+                setCreatedJobToken(null);
+                setNewJobQuestions(['']);
+                setShowJobModal(true);
+              }}
+              className="glow-btn px-4.5 py-2.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl flex items-center gap-2"
+            >
+              <Video className="w-4 h-4" /> Post a New Job
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {jobs.map(job => {
+              const jobCount = allCandidates.filter(c => c.jobId === job.id).length;
+              return (
+                <div key={job.id} className="glass-panel rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
+                  <div>
+                    <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-extrabold text-md text-zinc-100">{job.title}</h3>
+                          <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${job.isActive
+                            ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
+                            : 'bg-zinc-900 text-zinc-200 border-zinc-800'
+                            }`}>
+                            {job.isActive ? 'Active' : 'Closed'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-200 font-bold uppercase">{job.department}</span>
                       </div>
-                      <span className="text-[10px] text-zinc-500 font-bold uppercase">{job.department}</span>
+                      <span className="text-xs px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-300 font-bold">
+                        {jobCount} Screened
+                      </span>
                     </div>
-                    <span className="text-xs px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-300 font-bold">
-                      {jobCount} Screened
-                    </span>
-                  </div>
 
-                  {/* Questions List */}
-                  <div className="space-y-2 mb-6">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Configured Prompts</span>
-                    {job.questions.map((q, idx) => (
-                      <div key={idx} className="flex gap-2 text-xs text-gray-400 bg-zinc-950/40 border border-zinc-900/60 p-2.5 rounded-lg">
-                        <span className="text-accentPurple font-bold">{idx + 1}.</span>
-                        <p className="line-clamp-2">{q}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  {/* View Candidates Button */}
-                  <button
-                    onClick={() => setSelectedJobId(job.id)}
-                    className="w-full mb-4 py-2.5 bg-gradient-to-r from-accentPurple/10 to-accentCyan/10 hover:from-accentPurple/20 hover:to-accentCyan/20 border border-accentPurple/20 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-accentCyan" /> View {jobCount} Candidate{jobCount !== 1 ? 's' : ''}
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Recruiter Actions */}
-                  <div className="flex gap-2 mb-4 justify-end border-t border-zinc-900 pt-4">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleEditJobClick(job); }}
-                      className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-white bg-zinc-950 border border-zinc-900 px-2.5 py-1.5 rounded-lg transition-colors"
-                    >
-                      <Edit className="w-3 h-3 text-accentPurple" /> Edit
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleToggleJobStatus(job.id, job.isActive); }}
-                      className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-white bg-zinc-950 border border-zinc-900 px-2.5 py-1.5 rounded-lg transition-colors"
-                    >
-                      {job.isActive ? (
-                        <>
-                          <Lock className="w-3 h-3 text-amber-500" /> Close
-                        </>
-                      ) : (
-                        <>
-                          <Unlock className="w-3 h-3 text-emerald-500" /> Open
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id); }}
-                      className="flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 bg-rose-950/10 border border-rose-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3 text-rose-500" /> Delete
-                    </button>
-                  </div>
-
-                  {/* Invitation Token */}
-                  <div className="bg-zinc-950/20 px-3 py-2.5 rounded-xl border border-zinc-900 flex justify-between items-center">
-                    <div>
-                      <span className="block text-[8px] font-bold text-gray-500 uppercase">Invite Code</span>
-                      <span className="text-xs font-mono font-bold text-accentCyan uppercase">{job.token}</span>
+                    {/* Questions List */}
+                    <div className="space-y-2 mb-6">
+                      <span className="text-[10px] font-bold text-zinc-200 uppercase tracking-widest block mb-1">Configured Prompts</span>
+                      {job.questions.map((q, idx) => (
+                        <div key={idx} className="flex gap-2 text-xs text-zinc-400 bg-zinc-950/40 border border-zinc-900/60 p-2.5 rounded-lg">
+                          <span className="text-accentPurple font-bold">{idx + 1}.</span>
+                          <p className="line-clamp-2">{q}</p>
+                        </div>
+                      ))}
                     </div>
+                  </div>
+
+                  <div>
+                    {/* View Candidates Button */}
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(job.token);
-                        alert(`Invite Code ${job.token} copied to clipboard!`);
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/invite/${job.token}`);
+                        alert('Invitation link copied to clipboard!');
                       }}
-                      className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-white"
+                      className="w-full mb-4 py-2.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl text-xs font-bold text-accentPurple hover:text-accentCyan flex items-center justify-center gap-2 transition-all"
                     >
-                      <Clipboard className="w-3.5 h-3.5" /> Copy Code
+                      <Eye className="w-3.5 h-3.5 text-accentCyan" /> View {jobCount} Candidate{jobCount !== 1 ? 's' : ''}
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </button>
+
+                    {/* Recruiter Actions */}
+                    <div className="flex gap-2 mb-4 justify-end border-t border-zinc-900 pt-4">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEditJobClick(job); }}
+                        className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-100 bg-zinc-950 border border-zinc-900 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        <Edit className="w-3 h-3 text-accentPurple" /> Edit
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleToggleJobStatus(job.id, job.isActive); }}
+                        className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-100 bg-zinc-950 border border-zinc-900 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        {job.isActive ? (
+                          <>
+                            <Lock className="w-3 h-3 text-amber-500" /> Close
+                          </>
+                        ) : (
+                          <>
+                            <Unlock className="w-3 h-3 text-emerald-500" /> Open
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id); }}
+                        className="flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 bg-rose-950/10 border border-rose-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3 text-rose-500" /> Delete
+                      </button>
+                    </div>
+
+                    {/* Invitation Token */}
+                    <div className="bg-zinc-950/20 px-3 py-2.5 rounded-xl border border-zinc-900 flex justify-between items-center">
+                      <div>
+                        <span className="block text-[8px] font-bold text-zinc-200 uppercase">Invite Code</span>
+                        <span className="text-xs font-mono font-bold text-accentCyan uppercase">{job.token}</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(job.token);
+                          alert(`Invite Code ${job.token} copied to clipboard!`);
+                        }}
+                        className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-100"
+                      >
+                        <Clipboard className="w-3.5 h-3.5" /> Copy Code
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
         </>
       )}
 
@@ -913,7 +908,7 @@ export const RecruiterDashboard: React.FC = () => {
       {selectedCandidate && (
         <div className="fixed inset-0 z-50 flex items-center justify-end">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setSelectedCandidate(null)}></div>
-          
+
           <div className="relative w-full max-w-2xl h-full bg-zinc-950 border-l border-zinc-900 p-8 overflow-y-auto flex flex-col justify-between shadow-2xl z-10">
             <div>
               <div className="flex justify-between items-start pb-5 border-b border-zinc-900 mb-6">
@@ -921,12 +916,12 @@ export const RecruiterDashboard: React.FC = () => {
                   <span className="text-[10px] font-extrabold text-accentPurple uppercase tracking-widest bg-accentPurple/10 border border-accentPurple/20 px-2 py-0.5 rounded">
                     Evaluation Dashboard
                   </span>
-                  <h2 className="text-2xl font-extrabold text-white tracking-tight mt-2">{selectedCandidate.name}</h2>
-                  <p className="text-xs text-zinc-400 mt-1">Role Applied: {selectedCandidate.role}</p>
+                  <h2 className="text-2xl font-extrabold text-zinc-100 tracking-tight mt-2">{selectedCandidate.name}</h2>
+                  <p className="text-xs text-zinc-550 mt-1">Role Applied: {selectedCandidate.role}</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setSelectedCandidate(null)}
-                  className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors"
+                  className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-rose-500 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -934,11 +929,11 @@ export const RecruiterDashboard: React.FC = () => {
 
               {/* Cheating Warning Notice */}
               {selectedCandidate.cheatingFlagged && (
-                <div className="bg-rose-950/40 border border-rose-500/30 rounded-xl p-4 mb-5 flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-rose-500 mt-0.5 flex-shrink-0" />
+                <div className="bg-rose-50 border border-rose-250 rounded-xl p-4 mb-5 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-rose-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider">AI Cheating Telemetry Alert</h4>
-                    <p className="text-[10px] text-zinc-300 mt-1">{selectedCandidate.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}</p>
+                    <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider">AI Cheating Telemetry Alert</h4>
+                    <p className="text-[10px] text-zinc-650 mt-1">{selectedCandidate.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}</p>
                   </div>
                 </div>
               )}
@@ -948,14 +943,14 @@ export const RecruiterDashboard: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <ShieldAlert className="w-5 h-5 text-accentPurple flex-shrink-0" />
                   <div>
-                    <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Ephemeral Video Storage Policy</h4>
+                    <h4 className="text-xs font-bold text-zinc-100 uppercase tracking-wider">Ephemeral Video Storage Policy</h4>
                     <p className="text-[10px] text-zinc-400 mt-0.5">The candidate's raw video file was securely purged from storage immediately after transcription and score parsing.</p>
                   </div>
                 </div>
                 {selectedCandidate.candidateResumeUrl && (
                   <button
                     onClick={() => handleDownloadResume(selectedCandidate.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-xs font-bold text-zinc-300 hover:text-white transition-all flex-shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-xs font-bold text-zinc-300 hover:text-accentPurple transition-all flex-shrink-0"
                   >
                     <FileText className="w-4 h-4 text-accentCyan" /> Resume
                   </button>
@@ -1000,9 +995,9 @@ export const RecruiterDashboard: React.FC = () => {
               {selectedCandidate.telemetryAlerts.length > 0 && (
                 <div className="space-y-2 mb-6">
                   <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest block">Integrity Flag Warnings</span>
-                  <div className="bg-rose-950/20 border border-rose-500/20 rounded-xl p-4 space-y-2">
+                  <div className="bg-rose-50 border border-rose-200/60 rounded-xl p-4 space-y-2">
                     {selectedCandidate.telemetryAlerts.map((alert, idx) => (
-                      <div key={idx} className="flex gap-2 text-xs text-rose-300">
+                      <div key={idx} className="flex gap-2 text-xs text-rose-700">
                         <span className="font-bold">•</span>
                         <span>{alert}</span>
                       </div>
@@ -1013,18 +1008,18 @@ export const RecruiterDashboard: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t border-zinc-900 flex justify-between items-center">
-              <span className="text-xs text-zinc-500">Manual review overrides:</span>
+              <span className="text-xs text-zinc-200">Manual review overrides:</span>
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={() => {
                     handleStatusChange(selectedCandidate.id, 'Rejected');
                     setSelectedCandidate(null);
                   }}
-                  className="px-4 py-2 border border-rose-500/20 hover:bg-rose-500/10 text-rose-400 text-xs font-bold rounded-xl transition-all"
+                  className="px-4 py-2 border border-rose-250 hover:bg-rose-50 text-rose-600 text-xs font-bold rounded-xl transition-all"
                 >
                   Reject
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     handleStatusChange(selectedCandidate.id, 'Shortlisted');
                     setSelectedCandidate(null);
@@ -1045,19 +1040,19 @@ export const RecruiterDashboard: React.FC = () => {
           <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={() => setShowJobModal(false)}></div>
           <form onSubmit={handleCreateJob} className="relative glass-panel rounded-2xl w-full max-w-lg p-6 overflow-hidden shadow-2xl z-10 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
-            
+
             <div className="flex justify-between items-center pb-2 border-b border-zinc-900">
-              <h3 className="font-extrabold text-md text-white">Post a New Job Listing</h3>
-              <button type="button" onClick={() => setShowJobModal(false)} className="text-zinc-500 hover:text-white">
+              <h3 className="font-extrabold text-md text-zinc-100">Post a New Job Listing</h3>
+              <button type="button" onClick={() => setShowJobModal(false)} className="text-zinc-200 hover:text-rose-500">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {createdJobToken && (
-              <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 text-center space-y-2">
-                <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto" />
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Job Listing Created Successfully!</h4>
-                <p className="text-[11px] text-zinc-400">Share this unique invitation token with candidates to start async video evaluations:</p>
+              <div className="bg-emerald-50 border border-emerald-250 rounded-xl p-4 text-center space-y-2">
+                <CheckCircle className="w-8 h-8 text-emerald-600 mx-auto" />
+                <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Job Listing Created Successfully!</h4>
+                <p className="text-[11px] text-zinc-550">Share this unique invitation token with candidates to start async video evaluations:</p>
                 <div className="flex items-center justify-center gap-3 bg-zinc-950 border border-zinc-900 p-2.5 rounded-lg max-w-xs mx-auto">
                   <span className="text-sm font-mono font-bold text-accentCyan">{createdJobToken}</span>
                   <button
@@ -1066,7 +1061,7 @@ export const RecruiterDashboard: React.FC = () => {
                       navigator.clipboard.writeText(createdJobToken);
                       alert('Token copied!');
                     }}
-                    className="text-xs text-gray-400 hover:text-white"
+                    className="text-xs text-gray-400 hover:text-accentPurple"
                   >
                     Copy
                   </button>
@@ -1169,10 +1164,10 @@ export const RecruiterDashboard: React.FC = () => {
           <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={() => setEditingJob(null)}></div>
           <form onSubmit={handleUpdateJob} className="relative glass-panel rounded-2xl w-full max-w-lg p-6 overflow-hidden shadow-2xl z-10 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
-            
+
             <div className="flex justify-between items-center pb-2 border-b border-zinc-900">
-              <h3 className="font-extrabold text-md text-white">Edit Job details</h3>
-              <button type="button" onClick={() => setEditingJob(null)} className="text-zinc-500 hover:text-white">
+              <h3 className="font-extrabold text-md text-zinc-100">Edit Job details</h3>
+              <button type="button" onClick={() => setEditingJob(null)} className="text-zinc-200 hover:text-rose-500">
                 <X className="w-5 h-5" />
               </button>
             </div>

@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ShieldCheck, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Mail, Lock, User, ShieldCheck, ArrowRight, Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { loginWithPassword, registerWithPassword, requestRegisterOtp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isRegistering, setIsRegistering] = useState(false);
+
+  useEffect(() => {
+    if (location.state && typeof location.state === 'object' && 'register' in location.state) {
+      setIsRegistering(!!location.state.register);
+    }
+  }, [location.state]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [otp, setOtp] = useState('');
   const [showOtpVerification, setShowOtpVerification] = useState(false);
-  
+  const [showPassword, setShowPassword] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
@@ -91,11 +99,10 @@ export const Login: React.FC = () => {
               setShowOtpVerification(false);
               setFeedback({ type: '', message: '' });
             }}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all duration-300 ${
-              !isRegistering
-                ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-md' 
-                : 'text-zinc-500 hover:text-zinc-300'
-            }`}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all duration-300 ${!isRegistering
+                ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-md'
+                : 'text-zinc-200 hover:text-zinc-300'
+              }`}
           >
             HR Sign In
           </button>
@@ -105,11 +112,10 @@ export const Login: React.FC = () => {
               setShowOtpVerification(false);
               setFeedback({ type: '', message: '' });
             }}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all duration-300 ${
-              isRegistering
-                ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-md' 
-                : 'text-zinc-500 hover:text-zinc-300'
-            }`}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all duration-300 ${isRegistering
+                ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-md'
+                : 'text-zinc-200 hover:text-zinc-300'
+              }`}
           >
             HR Register
           </button>
@@ -121,23 +127,22 @@ export const Login: React.FC = () => {
 
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+              <h2 className="text-xl font-extrabold text-zinc-100 flex items-center gap-2">
                 {isRegistering ? (showOtpVerification ? 'Verify Identity' : 'Recruiter Registration') : 'Recruiter Portal'}{' '}
                 <Sparkles className="w-4.5 h-4.5 text-accentCyan" />
               </h2>
               <p className="text-[11px] text-zinc-400 mt-1.5 leading-relaxed">
-                {isRegistering 
-                  ? (showOtpVerification ? 'Submit the 6-digit verification code.' : 'Setup a corporate account to launch async job pipelines.') 
+                {isRegistering
+                  ? (showOtpVerification ? 'Submit the 6-digit verification code.' : 'Setup a corporate account to launch async job pipelines.')
                   : 'Log in to audit candidates, manage screenings, and tune AI settings.'}
               </p>
             </div>
 
             {feedback.message && (
-              <div className={`p-4 rounded-xl border text-xs font-semibold leading-relaxed ${
-                feedback.type === 'success' 
-                  ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20' 
-                  : 'bg-rose-950/40 text-rose-400 border-rose-500/20'
-              }`}>
+              <div className={`p-4 rounded-xl border text-xs font-semibold leading-relaxed ${feedback.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200/60'
+                  : 'bg-rose-50 text-rose-800 border-rose-200/60'
+                }`}>
                 {feedback.message}
               </div>
             )}
@@ -149,7 +154,7 @@ export const Login: React.FC = () => {
                     Verification Code
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-200">
                       <ShieldCheck className="w-4 h-4" />
                     </div>
                     <input
@@ -159,13 +164,13 @@ export const Login: React.FC = () => {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                       placeholder="123456"
-                      className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-white placeholder-zinc-700 focus:outline-none transition-all text-xs font-bold tracking-[0.2em] text-center"
+                      className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-zinc-100 placeholder-zinc-200 focus:outline-none transition-all text-xs font-bold tracking-[0.2em] text-center"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowOtpVerification(false)}
-                    className="text-[10px] text-zinc-500 hover:text-accentCyan mt-2 block underline transition-colors"
+                    className="text-[10px] text-zinc-200 hover:text-accentCyan mt-2 block underline transition-colors"
                   >
                     ← Edit corporate email details
                   </button>
@@ -178,7 +183,7 @@ export const Login: React.FC = () => {
                         Full Name
                       </label>
                       <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-200">
                           <User className="w-4 h-4" />
                         </div>
                         <input
@@ -187,7 +192,7 @@ export const Login: React.FC = () => {
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Jane Doe"
-                          className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-white placeholder-zinc-700 focus:outline-none transition-all text-xs"
+                          className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-zinc-100 placeholder-zinc-200 focus:outline-none transition-all text-xs"
                         />
                       </div>
                     </div>
@@ -198,7 +203,7 @@ export const Login: React.FC = () => {
                       Corporate Email
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-200">
                         <Mail className="w-4 h-4" />
                       </div>
                       <input
@@ -207,7 +212,7 @@ export const Login: React.FC = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="recruiter@acme.com"
-                        className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-white placeholder-zinc-700 focus:outline-none transition-all text-xs"
+                        className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-zinc-100 placeholder-zinc-200 focus:outline-none transition-all text-xs"
                       />
                     </div>
                   </div>
@@ -217,18 +222,25 @@ export const Login: React.FC = () => {
                       Password
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-200">
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         required
                         minLength={6}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-white placeholder-zinc-700 focus:outline-none transition-all text-xs"
+                        className="w-full pl-10 pr-10 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-zinc-100 placeholder-zinc-200 focus:outline-none transition-all text-xs"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-200 hover:text-zinc-300 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
                 </>
@@ -254,17 +266,17 @@ export const Login: React.FC = () => {
 
             {/* autofill sandbox details helper */}
             <div className="mt-8 pt-6 border-t border-zinc-900/60 text-center">
-              <span className="text-[9px] font-bold tracking-widest text-zinc-550 block mb-2 uppercase">Sandbox Credentials</span>
-              <div className="text-[10px] text-zinc-450 space-y-1">
+              <span className="text-[9px] font-bold tracking-widest text-zinc-400 block mb-2 uppercase">Sandbox Credentials</span>
+              <div className="text-[10px] text-zinc-200 space-y-1">
                 <div className="flex justify-between items-center py-2 border-b border-zinc-900/40">
                   <span>Recruiter: <strong className="text-zinc-300 font-mono">recruiter@acme.com</strong></span>
-                  <button 
+                  <button
                     onClick={() => {
                       setEmail('recruiter@acme.com');
                       setPassword('recruiter123');
                       setIsRegistering(false);
                     }}
-                    className="text-[9px] text-accentCyan hover:text-white font-extrabold uppercase tracking-wide transition-colors"
+                    className="text-[9px] text-accentCyan hover:text-zinc-100 font-extrabold uppercase tracking-wide transition-colors"
                   >
                     Autofill
                   </button>

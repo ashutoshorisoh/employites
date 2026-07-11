@@ -73,16 +73,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ candidates, onStatusCh
             key={col.id}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, col.id)}
-            className="flex flex-col bg-zinc-950/40 border border-zinc-900 rounded-2xl p-4 min-h-[500px] transition-all"
+            className="flex flex-col bg-zinc-950/70 border border-zinc-850/80 rounded-2xl p-4 min-h-[500px] transition-all shadow-xs"
           >
             {/* Header */}
             <div className="flex justify-between items-center mb-4 pb-2 border-b border-zinc-900">
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${
-                  col.id === 'Applied' ? 'bg-indigo-500' :
+                <div className={`w-2.5 h-2.5 rounded-full ${col.id === 'Applied' ? 'bg-indigo-500' :
                   col.id === 'Reviewing' ? 'bg-cyan-500' :
-                  col.id === 'Shortlisted' ? 'bg-emerald-500' : 'bg-rose-500'
-                }`} />
+                    col.id === 'Shortlisted' ? 'bg-emerald-500' : 'bg-rose-500'
+                  }`} />
                 <h3 className="text-sm font-bold text-gray-200">{col.label}</h3>
               </div>
               <span className="text-xs px-2 py-0.5 bg-zinc-900 border border-zinc-800 text-zinc-400 font-semibold rounded-full">
@@ -102,9 +101,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ candidates, onStatusCh
                     draggable
                     onDragStart={(e) => handleDragStart(e, candidate.id)}
                     onDragEnd={handleDragEnd}
-                    className={`glass-panel border-l-4 ${col.color} rounded-xl p-4 cursor-grab active:cursor-grabbing hover:border-r hover:border-r-zinc-800 transition-all duration-200 relative group ${
-                      draggedId === candidate.id ? 'opacity-40 scale-95' : 'opacity-100 hover:scale-[1.01]'
-                    }`}
+                    className={`glass-panel border-l-4 ${col.color} rounded-xl p-4 cursor-grab active:cursor-grabbing hover:border-r hover:border-r-zinc-800 transition-all duration-200 relative group ${draggedId === candidate.id ? 'opacity-40 scale-95' : 'opacity-100 hover:scale-[1.01]'
+                      }`}
                   >
                     {/* Anomaly banner */}
                     {hasAnomaly && (
@@ -119,28 +117,28 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ candidates, onStatusCh
                     <p className="text-xs text-gray-500 mt-0.5">{candidate.role}</p>
 
                     {/* Scores Section */}
-                    <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-zinc-900/60 text-center">
+                    <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-zinc-850/80 text-center">
                       <div>
-                        <span className="block text-[9px] font-semibold text-gray-500 uppercase tracking-wider">Comm</span>
-                        <span className="text-xs font-bold text-indigo-400">{candidate.scoreCommunication}/10</span>
+                        <span className="block text-[9px] font-semibold text-zinc-200 uppercase tracking-wider">Comm</span>
+                        <span className="text-xs font-bold text-indigo-600">{candidate.scoreCommunication}/10</span>
                       </div>
                       <div>
-                        <span className="block text-[9px] font-semibold text-gray-500 uppercase tracking-wider">Tech</span>
-                        <span className="text-xs font-bold text-cyan-400">{candidate.scoreTechnical}/10</span>
+                        <span className="block text-[9px] font-semibold text-zinc-200 uppercase tracking-wider">Tech</span>
+                        <span className="text-xs font-bold text-cyan-600">{candidate.scoreTechnical}/10</span>
                       </div>
                       <div>
-                        <span className="block text-[9px] font-semibold text-gray-500 uppercase tracking-wider">Integrity</span>
-                        <span className={`text-xs font-bold ${hasAnomaly ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        <span className="block text-[9px] font-semibold text-zinc-200 uppercase tracking-wider">Integrity</span>
+                        <span className={`text-xs font-bold ${hasAnomaly ? 'text-rose-600' : 'text-emerald-600'}`}>
                           {candidate.scoreTelemetry}/10
                         </span>
                       </div>
                     </div>
 
                     {/* Actions and details button */}
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-900/60">
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-850/80">
                       <button
                         onClick={() => onSelectCandidate(candidate)}
-                        className="text-[11px] font-semibold text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
+                        className="text-[11px] font-semibold text-zinc-400 hover:text-accentPurple flex items-center gap-1 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" /> View Analysis
                       </button>
@@ -150,7 +148,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ candidates, onStatusCh
                         {col.id !== 'Applied' && (
                           <button
                             onClick={() => moveCard(candidate.id, 'prev', col.id)}
-                            className="p-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-400 hover:text-white transition-colors"
+                            className="p-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-400 hover:text-accentPurple transition-colors"
                             title="Move back"
                           >
                             <ArrowLeft className="w-3 h-3" />
@@ -159,7 +157,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ candidates, onStatusCh
                         {col.id !== 'Rejected' && (
                           <button
                             onClick={() => moveCard(candidate.id, 'next', col.id)}
-                            className="p-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-400 hover:text-white transition-colors"
+                            className="p-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md text-zinc-400 hover:text-accentPurple transition-colors"
                             title="Move forward"
                           >
                             <ArrowRight className="w-3 h-3" />
@@ -173,7 +171,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ candidates, onStatusCh
 
               {colCandidates.length === 0 && (
                 <div className="h-32 border border-dashed border-zinc-900 rounded-xl flex items-center justify-center text-center p-4">
-                  <span className="text-xs text-zinc-600 font-medium">Drag items here</span>
+                  <span className="text-xs text-zinc-300 font-medium">Drag items here</span>
                 </div>
               )}
             </div>

@@ -6,22 +6,26 @@ import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { RecruiterDashboard } from './pages/RecruiterDashboard';
 import { CandidateInterview } from './pages/CandidateInterview';
+import { PricingPage } from './pages/PricingPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { RefundsPage } from './pages/RefundsPage';
 
 import { LandingPage } from './pages/LandingPage';
 import { useNavigate } from 'react-router-dom';
 
 // Protected Route wrapper checking user presence and appropriate role
-const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ('admin' | 'recruiter' | 'candidate')[] }> = ({ 
-  children, 
-  allowedRoles 
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ('admin' | 'recruiter' | 'candidate')[] }> = ({
+  children,
+  allowedRoles
 }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-darkBg text-gray-100 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-transparent text-zinc-800 flex flex-col items-center justify-center">
         <div className="w-10 h-10 border-4 border-accentPurple border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-zinc-500 mt-4">Loading authorization token state...</p>
+        <p className="text-xs text-zinc-200 mt-4">Loading...</p>
       </div>
     );
   }
@@ -69,25 +73,30 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<LandingPageWrapper />} />
             <Route path="/login" element={<Login />} />
-            
-            <Route 
-              path="/admin" 
-              element={<AdminDashboard />} 
+
+            <Route
+              path="/admin"
+              element={<AdminDashboard />}
             />
-            
-            <Route 
-              path="/recruiter" 
+
+            <Route
+              path="/recruiter"
               element={
                 <ProtectedRoute allowedRoles={['recruiter']}>
                   <RecruiterDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/interview" 
-              element={<CandidateInterview />} 
+
+            <Route
+              path="/interview"
+              element={<CandidateInterview />}
             />
+
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/refunds" element={<RefundsPage />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

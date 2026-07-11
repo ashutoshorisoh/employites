@@ -69,12 +69,11 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
             value={formData.name}
             onChange={handleChange}
             placeholder="Jane Doe"
-            className={`w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border ${
-              errors.name ? 'border-rose-500/50 focus:border-rose-500' : 'border-zinc-800 focus:border-accentPurple/50'
-            } rounded-xl text-gray-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm`}
+            className={`w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border ${errors.name ? 'border-rose-500/50 focus:border-rose-500' : 'border-zinc-800 focus:border-accentPurple/50'
+              } rounded-xl text-gray-100 placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm`}
           />
         </div>
-        {errors.name && <p className="text-xs text-rose-400 mt-1.5">{errors.name}</p>}
+        {errors.name && <p className="text-xs text-rose-600 mt-1.5">{errors.name}</p>}
       </div>
 
       <div>
@@ -91,17 +90,16 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
             value={formData.email}
             onChange={handleChange}
             placeholder="jane.doe@example.com"
-            className={`w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border ${
-              errors.email ? 'border-rose-500/50 focus:border-rose-500' : 'border-zinc-800 focus:border-accentPurple/50'
-            } rounded-xl text-gray-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm`}
+            className={`w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border ${errors.email ? 'border-rose-500/50 focus:border-rose-500' : 'border-zinc-800 focus:border-accentPurple/50'
+              } rounded-xl text-gray-100 placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm`}
           />
         </div>
-        {errors.email && <p className="text-xs text-rose-400 mt-1.5">{errors.email}</p>}
+        {errors.email && <p className="text-xs text-rose-600 mt-1.5">{errors.email}</p>}
       </div>
 
       <div>
         <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-          LinkedIn Profile URL <span className="text-zinc-600">(Optional)</span>
+          LinkedIn Profile URL <span className="text-zinc-300">(Optional)</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
@@ -113,7 +111,7 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
             value={formData.linkedin}
             onChange={handleChange}
             placeholder="https://linkedin.com/in/username"
-            className="w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border border-zinc-800 focus:border-accentPurple/50 rounded-xl text-gray-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border border-zinc-800 focus:border-accentPurple/50 rounded-xl text-gray-100 placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm"
           />
         </div>
       </div>
@@ -132,12 +130,11 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
             value={formData.token}
             onChange={handleChange}
             placeholder="INV-XXXXXX"
-            className={`w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border ${
-              errors.token ? 'border-rose-500/50 focus:border-rose-500' : 'border-zinc-800 focus:border-accentPurple/50'
-            } rounded-xl text-gray-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm`}
+            className={`w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border ${errors.token ? 'border-rose-500/50 focus:border-rose-500' : 'border-zinc-800 focus:border-accentPurple/50'
+              } rounded-xl text-gray-100 placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm`}
           />
         </div>
-        {errors.token && <p className="text-xs text-rose-400 mt-1.5">{errors.token}</p>}
+        {errors.token && <p className="text-xs text-rose-600 mt-1.5">{errors.token}</p>}
       </div>
 
       <div className="pt-2">
@@ -149,11 +146,10 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
             onChange={handleChange}
             className="sr-only"
           />
-          <div className={`w-5 h-5 flex flex-shrink-0 items-center justify-center border rounded-md mr-3 transition-colors ${
-            formData.agreeToRecording 
-              ? 'bg-accentPurple border-accentPurple text-white' 
+          <div className={`w-5 h-5 flex flex-shrink-0 items-center justify-center border rounded-md mr-3 transition-colors ${formData.agreeToRecording
+              ? 'bg-accentPurple border-accentPurple text-white'
               : 'border-zinc-800 bg-zinc-900 group-hover:border-zinc-700'
-          }`}>
+            }`}>
             {formData.agreeToRecording && (
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                 <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
@@ -165,7 +161,7 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
           </span>
         </label>
         {errors.agreeToRecording && (
-          <p className="text-xs text-rose-400 mt-1.5 ml-8">{errors.agreeToRecording}</p>
+          <p className="text-xs text-rose-600 mt-1.5 ml-8">{errors.agreeToRecording}</p>
         )}
       </div>
 

@@ -15,7 +15,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Keep the provider wrapper structure to prevent breaking root layout/context nesting in App.tsx
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 gap-3">
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-200 gap-3">
         <div className="w-8 h-8 rounded-full border-2 border-accentCyan/30 border-t-accentCyan animate-spin"></div>
         <p className="text-xs">Re-establishing secure session...</p>
       </div>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { MetricCard } from '../components/ui/MetricCard';
-import { 
-  Users, Video, Activity, DollarSign, Cpu, Settings, 
-  RefreshCw, AlertTriangle, ShieldCheck, Lock, Loader2 
+import {
+  Users, Video, Activity, DollarSign, Cpu, Settings,
+  RefreshCw, AlertTriangle, ShieldCheck, Lock, Loader2, Eye, EyeOff
 } from 'lucide-react';
 
 interface ClientOrg {
@@ -19,9 +19,10 @@ interface ClientOrg {
 
 export const AdminDashboard: React.FC = () => {
   const { user, loginWithPassword, logout } = useAuth();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -77,14 +78,14 @@ export const AdminDashboard: React.FC = () => {
             <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
 
             <div className="mb-6 text-center">
-              <h2 className="text-xl font-extrabold text-white flex items-center justify-center gap-1.5">
+              <h2 className="text-xl font-extrabold text-zinc-100 flex items-center justify-center gap-1.5">
                 Owner Workspace <Settings className="w-5 h-5 text-accentPurple animate-spin" style={{ animationDuration: '6s' }} />
               </h2>
               <p className="text-xs text-gray-400 mt-1">Please authenticate with your administrator credentials.</p>
             </div>
 
             {errorMsg && (
-              <div className="p-3.5 bg-rose-950/40 text-rose-400 border border-rose-500/20 text-xs font-semibold rounded-xl mb-5 text-center">
+              <div className="p-3.5 bg-rose-50 text-rose-800 border border-rose-200/60 text-xs font-semibold rounded-xl mb-5 text-center">
                 {errorMsg}
               </div>
             )}
@@ -95,7 +96,7 @@ export const AdminDashboard: React.FC = () => {
                   Owner Email
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-200">
                     <Users className="w-4 h-4" />
                   </div>
                   <input
@@ -104,7 +105,7 @@ export const AdminDashboard: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="admin@skreener.ai"
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border border-zinc-800 focus:border-accentPurple/50 rounded-xl text-gray-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border border-zinc-800 focus:border-accentPurple/50 rounded-xl text-gray-100 placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm"
                   />
                 </div>
               </div>
@@ -114,17 +115,24 @@ export const AdminDashboard: React.FC = () => {
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-200">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-950/60 border border-zinc-800 focus:border-accentPurple/50 rounded-xl text-gray-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm"
+                    className="w-full pl-10 pr-10 py-2.5 bg-zinc-950/60 border border-zinc-800 focus:border-accentPurple/50 rounded-xl text-gray-100 placeholder-zinc-650 focus:outline-none focus:ring-1 focus:ring-accentPurple/20 transition-all text-sm"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-200 hover:text-zinc-300 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -153,7 +161,7 @@ export const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-zinc-100 tracking-tight flex items-center gap-2">
             Platform Owner Workspace <Settings className="w-5 h-5 text-accentPurple animate-spin" style={{ animationDuration: '6s' }} />
           </h1>
           <p className="text-xs text-gray-400 mt-1">Real-time infrastructure health, telemetry thresholds, and client subscription quotas.</p>
@@ -163,14 +171,14 @@ export const AdminDashboard: React.FC = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-950/60 hover:bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold text-zinc-300 hover:text-white transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-950/60 hover:bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold text-zinc-300 hover:text-accentPurple transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync Metrics
           </button>
-          
+
           <button
             onClick={logout}
-            className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white rounded-xl border border-zinc-850 transition-all"
+            className="px-4 py-2 bg-zinc-900 hover:bg-rose-50 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-rose-600 rounded-xl border border-zinc-850 hover:border-rose-200 transition-all"
           >
             Logout
           </button>
@@ -215,14 +223,14 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Client List & Systems Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Clients Table (2 columns wide on large screen) */}
         <div className="lg:col-span-2 flex flex-col">
           <div className="glass-panel rounded-2xl p-6 flex-1 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-md font-bold text-gray-200">Registered Client Organizations</h3>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold">Active Seats Check</span>
+                <span className="text-[10px] text-zinc-200 uppercase tracking-widest font-semibold">Active Seats Check</span>
               </div>
 
               <div className="overflow-x-auto">
@@ -245,21 +253,19 @@ export const AdminDashboard: React.FC = () => {
                           <span className="text-[10px] text-gray-500">{c.ownerEmail}</span>
                         </td>
                         <td className="py-3.5">
-                          <span className={`inline-block text-[9px] font-extrabold px-2 py-0.5 rounded border ${
-                            c.plan === 'Enterprise Scale' ? 'bg-indigo-950/40 text-indigo-400 border-indigo-500/20' :
-                            c.plan === 'Grow Professional' ? 'bg-cyan-950/40 text-cyan-400 border-cyan-500/20' :
-                            c.plan === 'Starter Tier' ? 'bg-pink-950/40 text-pink-400 border-pink-500/20' :
-                            'bg-zinc-900 text-zinc-500 border-zinc-800'
-                          }`}>
+                          <span className={`inline-block text-[9px] font-extrabold px-2 py-0.5 rounded border ${c.plan === 'Enterprise Scale' ? 'bg-indigo-50 text-indigo-700 border-indigo-200/60' :
+                            c.plan === 'Grow Professional' ? 'bg-cyan-50 text-cyan-700 border-cyan-200/60' :
+                              c.plan === 'Starter Tier' ? 'bg-rose-50 text-rose-700 border-rose-200/60' :
+                                'bg-zinc-900 text-zinc-200 border-zinc-850'
+                            }`}>
                             {c.plan}
                           </span>
                         </td>
                         <td className="py-3.5 text-center font-semibold text-gray-300">{c.seats}</td>
                         <td className="py-3.5 text-center font-semibold text-gray-300">{c.totalSubmissions}</td>
                         <td className="py-3.5">
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${
-                            c.status === 'active' ? 'text-emerald-400' : 'text-rose-400'
-                          }`}>
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${c.status === 'active' ? 'text-emerald-600' : 'text-rose-600'
+                            }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                             {c.status}
                           </span>
@@ -267,11 +273,10 @@ export const AdminDashboard: React.FC = () => {
                         <td className="py-3.5 text-right">
                           <button
                             onClick={() => toggleClientStatus(c.id)}
-                            className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors ${
-                              c.status === 'active' 
-                                ? 'border-rose-500/20 text-rose-400 hover:bg-rose-500/10' 
-                                : 'border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10'
-                            }`}
+                            className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors ${c.status === 'active'
+                              ? 'border-rose-200 text-rose-600 hover:bg-rose-50'
+                              : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                              }`}
                           >
                             {c.status === 'active' ? 'Suspend' : 'Activate'}
                           </button>
@@ -297,9 +302,9 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-zinc-950/60 border border-zinc-800 rounded-xl">
                 <div>
                   <span className="font-semibold text-gray-300 block">Supabase Connection</span>
-                  <span className="text-[10px] text-zinc-500">Database pools & caching</span>
+                  <span className="text-[10px] text-zinc-200">Database pools & caching</span>
                 </div>
-                <span className="flex items-center gap-1.5 font-bold text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md">
                   <ShieldCheck className="w-3.5 h-3.5" /> 100% OK
                 </span>
               </div>
@@ -307,9 +312,9 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-zinc-950/60 border border-zinc-800 rounded-xl">
                 <div>
                   <span className="font-semibold text-gray-300 block">Cloudflare R2 Bucket</span>
-                  <span className="text-[10px] text-zinc-500">Direct streaming handshake</span>
+                  <span className="text-[10px] text-zinc-200">Direct streaming handshake</span>
                 </div>
-                <span className="flex items-center gap-1.5 font-bold text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md">
                   <ShieldCheck className="w-3.5 h-3.5" /> 100% OK
                 </span>
               </div>
@@ -317,9 +322,9 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-zinc-950/60 border border-zinc-800 rounded-xl">
                 <div>
                   <span className="font-semibold text-gray-300 block">Gemini 1.5 Flash Engine</span>
-                  <span className="text-[10px] text-zinc-500">Async structured evaluation API</span>
+                  <span className="text-[10px] text-zinc-200">Async structured evaluation API</span>
                 </div>
-                <span className="flex items-center gap-1.5 font-bold text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md">
                   <ShieldCheck className="w-3.5 h-3.5" /> 100% OK
                 </span>
               </div>
@@ -336,13 +341,13 @@ export const AdminDashboard: React.FC = () => {
               <div className="border-l-2 border-amber-500 pl-3 py-0.5">
                 <span className="font-semibold text-gray-200 block">Eye-Tracking Anomaly Flagged</span>
                 <span>Candidate candidate_9a2f on Google Recruiter pool triggered alert. Rating: 3/10 integrity.</span>
-                <span className="block text-[9px] text-zinc-500 mt-1">14 mins ago</span>
+                <span className="block text-[9px] text-zinc-200 mt-1">14 mins ago</span>
               </div>
 
               <div className="border-l-2 border-rose-500 pl-3 py-0.5">
                 <span className="font-semibold text-gray-200 block">Off-screen Text Reading Flagged</span>
                 <span>Candidate candidate_c7b2 on Stripe Acquisition pool triggered alert. Rating: 2/10 integrity.</span>
-                <span className="block text-[9px] text-zinc-500 mt-1">45 mins ago</span>
+                <span className="block text-[9px] text-zinc-200 mt-1">45 mins ago</span>
               </div>
             </div>
           </div>

@@ -6,28 +6,29 @@
 
 @layer base {
   body {
-    background-color: #070709;
+    background-color: #faf9f6;
     background-image: 
-      radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.04) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(224, 83, 21, 0.03) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, rgba(234, 88, 12, 0.01) 0px, transparent 60%);
+      radial-gradient(at 0% 0%, rgba(255, 107, 53, 0.07) 0px, transparent 40%),
+      radial-gradient(at 100% 0%, rgba(224, 83, 21, 0.05) 0px, transparent 40%),
+      radial-gradient(at 50% 50%, rgba(255, 107, 53, 0.02) 0px, transparent 60%);
     background-attachment: fixed;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    color: #e2e8f0;
+    color: #1f2937;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
+    color: #111827;
   }
 }
 
 /* Glassmorphism utilities */
 .glass-panel {
-  background: rgba(13, 13, 17, 0.6);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(255, 107, 53, 0.08);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -36,9 +37,9 @@
 }
 
 .glass-panel-hover:hover {
-  background: rgba(18, 18, 24, 0.75);
-  border-color: rgba(139, 92, 246, 0.25);
-  box-shadow: 0 12px 40px rgba(139, 92, 246, 0.12);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 107, 53, 0.2);
+  box-shadow: 0 12px 40px rgba(255, 107, 53, 0.06);
   transform: translateY(-2px);
 }
 
@@ -49,21 +50,21 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #070709;
+  background: #ffffff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.25);
+  background: rgba(255, 107, 53, 0.4);
 }
 
 /* Premium Glow Utilities */
 .glow-text-purple {
-  text-shadow: 0 0 20px rgba(249, 115, 22, 0.35);
+  text-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
 }
 
 .glow-text-cyan {
@@ -74,7 +75,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.15);
 }
 
 .glow-btn::after {
@@ -87,7 +88,7 @@
   background: linear-gradient(
     to right,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.25) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   transform: skewX(-20deg);
@@ -97,7 +98,7 @@
 
 .glow-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.2);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
 }
 
 .glow-btn:hover::after {
@@ -116,7 +117,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(to right, rgba(249, 115, 22, 0.4), rgba(224, 83, 21, 0.4));
+  background: linear-gradient(to right, rgba(255, 107, 53, 0.4), rgba(224, 83, 21, 0.4));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -129,14 +130,14 @@
     background-position: 0 0;
   }
   100% {
-    background-position: 40px 40px;
+    background-position: 24px 24px;
   }
 }
 
 .grid-bg-overlay {
-  background-size: 40px 40px;
+  background-size: 24px 24px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
   animation: gridMove 20s linear infinite;
 }
