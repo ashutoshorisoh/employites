@@ -536,8 +536,8 @@ export const RecruiterDashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <h2 className="text-lg font-extrabold text-zinc-100">{selectedJob.title}</h2>
             <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${selectedJob.isActive
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/60'
-              : 'bg-zinc-900 text-zinc-200 border-zinc-800'
+              ? 'bg-green text-white border-green'
+              : 'bg-red text-white border-red'
               }`}>
               {selectedJob.isActive ? 'Active' : 'Closed'}
             </span>
@@ -792,7 +792,7 @@ export const RecruiterDashboard: React.FC = () => {
                 setNewJobQuestions(['']);
                 setShowJobModal(true);
               }}
-              className="glow-btn px-4.5 py-2.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl flex items-center gap-2"
+              className="glow-btn px-5 py-2.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl flex items-center gap-2"
             >
               <Video className="w-4 h-4" /> Post a New Job
             </button>
@@ -838,8 +838,8 @@ export const RecruiterDashboard: React.FC = () => {
                     {/* View Candidates Button */}
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/invite/${job.token}`);
-                        alert('Invitation link copied to clipboard!');
+                        setSelectedJobId(job.id);
+                        setJobSubTab('candidates');
                       }}
                       className="w-full mb-4 py-2.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl text-xs font-bold text-accentPurple hover:text-accentCyan flex items-center justify-center gap-2 transition-all"
                     >
@@ -877,21 +877,24 @@ export const RecruiterDashboard: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Invitation Token */}
-                    <div className="bg-zinc-950/20 px-3 py-2.5 rounded-xl border border-zinc-900 flex justify-between items-center">
-                      <div>
-                        <span className="block text-[8px] font-bold text-zinc-200 uppercase">Invite Code</span>
-                        <span className="text-xs font-mono font-bold text-accentCyan uppercase">{job.token}</span>
+                    {/* Job Access Link */}
+                    <div className="bg-zinc-950/20 px-3 py-2.5 rounded-xl border border-zinc-900 flex justify-between items-center gap-3">
+                      <div className="overflow-hidden flex-1">
+                        <span className="block text-[8px] font-bold text-zinc-200 uppercase">Interview Link</span>
+                        <span className="text-xs font-mono font-bold text-accentCyan truncate block" title={`${window.location.origin}/interview?token=${job.token}`}>
+                          {window.location.origin}/interview?token={job.token}
+                        </span>
                       </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigator.clipboard.writeText(job.token);
-                          alert(`Invite Code ${job.token} copied to clipboard!`);
+                          const inviteLink = `${window.location.origin}/interview?token=${job.token}`;
+                          navigator.clipboard.writeText(inviteLink);
+                          alert(`Job Link copied to clipboard!`);
                         }}
-                        className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-100"
+                        className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-100 flex-shrink-0"
                       >
-                        <Clipboard className="w-3.5 h-3.5" /> Copy Code
+                        <Clipboard className="w-3.5 h-3.5" /> Copy Link
                       </button>
                     </div>
                   </div>
