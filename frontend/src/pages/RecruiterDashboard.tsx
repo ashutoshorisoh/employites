@@ -18,13 +18,37 @@ interface Job {
   questions: string[];
   candidateCount: number;
   isActive: boolean;
+  top_k_filter?: number;
+  expires_at?: string;
+  created_at?: string;
+}
+
+export interface Candidate {
+  id: string;
+  jobId: string;
+  name: string;
+  email: string;
+  role: string;
+  scoreCommunication: number;
+  scoreTechnical: number;
+  scoreTelemetry: number;
+  cheatingFlagged: boolean;
+  cheatingDetails?: string;
+  resumeRequested: boolean;
+  candidateResumeUrl?: string;
+  telemetryAlerts: string[];
+  status: string;
+  summary: string;
+  videoUrl?: string;
+  transcript: string;
+  createdAt?: string;
 }
 
 export const RecruiterDashboard: React.FC = () => {
-  const [allCandidates, setAllCandidates] = useState<(CandidateCard & { jobId: string })[]>([]);
+  const [allCandidates, setAllCandidates] = useState<Candidate[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobSubTab, setJobSubTab] = useState<'candidates' | 'cheatflags'>('candidates');
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateCard | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -50,15 +74,11 @@ export const RecruiterDashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     setErrorMsg('');
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       // 1. Fetch all job postings
-      const jobsRes = await fetch(`${API_BASE_URL}/jobs`, { headers });
+      const jobsRes = await fetch(`${API_BASE_URL}/jobs`, { headers, credentials: 'include' });
       let fetchedJobs: any[] = [];
       if (jobsRes.ok) {
         fetchedJobs = await jobsRes.json();
@@ -71,17 +91,20 @@ export const RecruiterDashboard: React.FC = () => {
           token: j.token || 'N/A',
           questions: Array.isArray(j.questions) ? j.questions : (j.requirements ? [j.requirements] : ['Explain your core skills.']),
           candidateCount: 0,
-          isActive: j.is_active !== false
+          isActive: j.is_active !== false,
+          top_k_filter: j.top_k_filter || 3,
+          expires_at: j.expires_at || '',
+          created_at: j.created_at || ''
         }));
         setJobs(mappedJobs);
       }
 
       // 2. Fetch all candidate submissions
-      const subRes = await fetch(`${API_BASE_URL}/submissions`, { headers });
+      const subRes = await fetch(`${API_BASE_URL}/submissions`, { headers, credentials: 'include' });
       if (subRes.ok) {
         const fetchedSubs = await subRes.json();
         
-        // Map submissions to Kanban Candidate Cards with jobId attached
+        // Map submissions to Leaderboard Candidates with jobId and cheating flags
         const mappedCandidates = fetchedSubs.map((s: any) => {
           const feedback = s.ai_feedback || {};
           const summary = feedback.summary || 'AI evaluation enqueued. Processing responses.';
@@ -92,15 +115,21 @@ export const RecruiterDashboard: React.FC = () => {
             id: s.id,
             jobId: s.job_id,
             name: s.candidate_name || 'Unknown Candidate',
+            email: s.candidate_email || '',
             role: s.job_title || 'Applicant',
-            scoreCommunication: s.score_communication !== null ? s.score_communication / 10 : 0,
-            scoreTechnical: s.score_technical !== null ? s.score_technical / 10 : 0,
-            scoreTelemetry: s.score_telemetry !== null ? s.score_telemetry / 10 : 10,
+            scoreCommunication: s.score_communication !== null ? s.score_communication : 0,
+            scoreTechnical: s.score_technical !== null ? s.score_technical : 0,
+            scoreTelemetry: s.score_telemetry !== null ? s.score_telemetry : 100,
+            cheatingFlagged: !!s.cheating_flagged,
+            cheatingDetails: s.cheating_details || '',
+            resumeRequested: !!s.resume_requested,
+            candidateResumeUrl: s.candidate_resume_url || '',
             telemetryAlerts: alerts,
-            status: s.status === 'Completed' ? 'Reviewing' : s.status === 'Failed' ? 'Rejected' : 'Applied',
+            status: s.status,
             summary: summary,
-            videoUrl: '', // Ephemeral storage enforces zero raw video playback
-            transcript: transcript
+            videoUrl: '',
+            transcript: transcript,
+            createdAt: s.created_at
           };
         });
 
@@ -132,13 +161,9 @@ export const RecruiterDashboard: React.FC = () => {
     const interval = setInterval(() => {
       // Background fetch without showing full-page loader
       const fetchSilent = async () => {
-        const token = localStorage.getItem('skreener_token');
         const headers: Record<string, string> = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
         try {
-          const subRes = await fetch(`${API_BASE_URL}/submissions`, { headers });
+          const subRes = await fetch(`${API_BASE_URL}/submissions`, { headers, credentials: 'include' });
           if (subRes.ok) {
             const fetchedSubs = await subRes.json();
             const mappedCandidates = fetchedSubs.map((s: any) => {
@@ -151,15 +176,21 @@ export const RecruiterDashboard: React.FC = () => {
                 id: s.id,
                 jobId: s.job_id,
                 name: s.candidate_name || 'Unknown Candidate',
+                email: s.candidate_email || '',
                 role: s.job_title || 'Applicant',
-                scoreCommunication: s.score_communication !== null ? s.score_communication / 10 : 0,
-                scoreTechnical: s.score_technical !== null ? s.score_technical / 10 : 0,
-                scoreTelemetry: s.score_telemetry !== null ? s.score_telemetry / 10 : 10,
+                scoreCommunication: s.score_communication !== null ? s.score_communication : 0,
+                scoreTechnical: s.score_technical !== null ? s.score_technical : 0,
+                scoreTelemetry: s.score_telemetry !== null ? s.score_telemetry : 100,
+                cheatingFlagged: !!s.cheating_flagged,
+                cheatingDetails: s.cheating_details || '',
+                resumeRequested: !!s.resume_requested,
+                candidateResumeUrl: s.candidate_resume_url || '',
                 telemetryAlerts: alerts,
-                status: s.status === 'Completed' ? 'Reviewing' : s.status === 'Failed' ? 'Rejected' : 'Applied',
+                status: s.status,
                 summary: summary,
                 videoUrl: '',
-                transcript: transcript
+                transcript: transcript,
+                createdAt: s.created_at
               };
             });
 
@@ -188,24 +219,77 @@ export const RecruiterDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [allCandidates]);
 
-  const handleStatusChange = async (id: string, newStatus: CandidateCard['status']) => {
+  const handleStatusChange = async (id: string, newStatus: string) => {
     setAllCandidates(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
     
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const dbStatus = newStatus === 'Reviewing' ? 'Completed' : newStatus === 'Rejected' ? 'Failed' : 'Pending';
       await fetch(`${API_BASE_URL}/submissions/${id}`, {
         method: 'PUT',
         headers: headers,
+        credentials: 'include',
         body: JSON.stringify({ status: dbStatus })
       });
     } catch (err) {
       console.error('Failed to update candidate status on server:', err);
+    }
+  };
+
+  const handleCloseJob = async (jobId: string) => {
+    if (!window.confirm("Are you sure you want to close this job listing? This will lock candidate submissions, rank the leaderboard, and email the top candidate shortlist to your profile email.")) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/close`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        alert("Job closed successfully! Top candidate reports have been emailed.");
+        fetchDashboardData();
+      } else {
+        const data = await res.json();
+        alert(`Failed to close job: ${data.detail || 'Server error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to close job posting.");
+    }
+  };
+
+  const handleAskResume = async (submissionId: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/submissions/${submissionId}/ask-resume`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        alert("Resume request notification email successfully sent to the candidate.");
+        fetchDashboardData();
+      } else {
+        const data = await res.json();
+        alert(`Failed to request resume: ${data.detail || 'Server error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to request resume.");
+    }
+  };
+
+  const handleDownloadResume = async (submissionId: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/submissions/resume-download/${submissionId}`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        window.open(data.url, '_blank');
+      } else {
+        alert("Failed to retrieve resume download link.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Connection error fetching resume download URL.");
     }
   };
 
@@ -254,16 +338,13 @@ export const RecruiterDashboard: React.FC = () => {
     setErrorMsg('');
     setCreatedJobToken(null);
 
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
         headers: headers,
+        credentials: 'include',
         body: JSON.stringify({
           title: newJobTitle,
           description: newJobDesc,
@@ -305,16 +386,13 @@ export const RecruiterDashboard: React.FC = () => {
   };
 
   const handleToggleJobStatus = async (jobId: string, currentStatus: boolean) => {
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
         method: 'PUT',
         headers: headers,
+        credentials: 'include',
         body: JSON.stringify({ is_active: !currentStatus })
       });
 
@@ -335,16 +413,13 @@ export const RecruiterDashboard: React.FC = () => {
       return;
     }
 
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
         method: 'DELETE',
-        headers: headers
+        headers: headers,
+        credentials: 'include'
       });
 
       if (!res.ok) {
@@ -376,16 +451,13 @@ export const RecruiterDashboard: React.FC = () => {
     if (!editingJob || !editJobTitle || !editJobDesc || activeQuestions.length === 0) return;
 
     setIsUpdatingJob(true);
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/jobs/${editingJob.id}`, {
         method: 'PUT',
         headers: headers,
+        credentials: 'include',
         body: JSON.stringify({
           title: editJobTitle,
           description: editJobDesc,
@@ -417,19 +489,19 @@ export const RecruiterDashboard: React.FC = () => {
   };
 
   // Candidates filtered by selected job
-  const jobCandidates: CandidateCard[] = selectedJobId
+  const jobCandidates: Candidate[] = selectedJobId
     ? allCandidates.filter(c => c.jobId === selectedJobId)
     : [];
   const selectedJob = selectedJobId ? jobs.find(j => j.id === selectedJobId) : null;
 
   // Per-job metrics (only meaningful when a job is selected)
   const jobTotalEvaluations = jobCandidates.length;
-  const jobAnomaliesCount = jobCandidates.filter(c => c.scoreTelemetry < 5).length;
+  const jobAnomaliesCount = jobCandidates.filter(c => c.cheatingFlagged).length;
   const jobAvgComm = jobCandidates.length > 0 
-    ? (jobCandidates.reduce((sum, c) => sum + c.scoreCommunication, 0) / jobCandidates.length).toFixed(1) 
+    ? (jobCandidates.reduce((sum, c) => sum + c.scoreCommunication, 0) / jobCandidates.length).toFixed(0) 
     : '0';
   const jobAvgTech = jobCandidates.length > 0 
-    ? (jobCandidates.reduce((sum, c) => sum + c.scoreTechnical, 0) / jobCandidates.length).toFixed(1) 
+    ? (jobCandidates.reduce((sum, c) => sum + c.scoreTechnical, 0) / jobCandidates.length).toFixed(0) 
     : '0';
 
   if (isLoading) {
@@ -461,7 +533,7 @@ export const RecruiterDashboard: React.FC = () => {
           >
             <ChevronLeft className="w-4 h-4" /> Back to All Jobs
           </button>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
             <h2 className="text-lg font-extrabold text-white">{selectedJob.title}</h2>
             <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
               selectedJob.isActive
@@ -472,13 +544,38 @@ export const RecruiterDashboard: React.FC = () => {
             </span>
             <span className="text-[10px] text-zinc-500 font-mono bg-zinc-950 border border-zinc-900 px-2 py-0.5 rounded">{selectedJob.token}</span>
             <span className="text-[10px] text-zinc-500 font-bold">{jobCandidates.length} candidate{jobCandidates.length !== 1 ? 's' : ''}</span>
+            
+            {/* Expiration and Closing Alerts */}
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg border ${
+              selectedJob.isActive
+                ? 'bg-orange-950/40 text-orange-400 border-orange-500/20'
+                : 'bg-zinc-900/60 text-zinc-400 border-zinc-800'
+            }`}>
+              {(() => {
+                if (!selectedJob.isActive) return 'Closed';
+                if (!selectedJob.expires_at) return 'Closing in 3 days';
+                const diff = new Date(selectedJob.expires_at).getTime() - new Date().getTime();
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                return days <= 0 ? 'Closed' : `Closing in ${days} day${days !== 1 ? 's' : ''}`;
+              })()}
+            </span>
+
+            {/* Close Job Posting Trigger Button */}
+            {selectedJob.isActive && (
+              <button
+                onClick={() => handleCloseJob(selectedJob.id)}
+                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900 border border-rose-500/20 hover:border-rose-500/40 text-[10px] font-extrabold text-rose-400 hover:text-white rounded-lg transition-all"
+              >
+                Close Job Posting
+              </button>
+            )}
           </div>
 
           {/* Job-specific stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
             <MetricCard title="Completed Screens" value={jobTotalEvaluations} icon={Users} glowColor="purple" />
-            <MetricCard title="Avg Tech Fluency" value={`${jobAvgTech}/10`} icon={Award} glowColor="cyan" />
-            <MetricCard title="Avg Communication" value={`${jobAvgComm}/10`} icon={Star} glowColor="pink" />
+            <MetricCard title="Avg Tech Fluency" value={`${jobAvgTech}/100`} icon={Award} glowColor="cyan" />
+            <MetricCard title="Avg Communication" value={`${jobAvgComm}/100`} icon={Star} glowColor="pink" />
             <MetricCard title="Telemetry Alerts" value={jobAnomaliesCount} icon={ShieldAlert} glowColor="amber" change={`${jobAnomaliesCount} flagged`} isPositive={false} />
           </div>
 
@@ -506,11 +603,146 @@ export const RecruiterDashboard: React.FC = () => {
           {jobSubTab === 'candidates' && (
             <>
               {jobCandidates.length > 0 ? (
-                <KanbanBoard
-                  candidates={jobCandidates}
-                  onStatusChange={handleStatusChange}
-                  onSelectCandidate={setSelectedCandidate}
-                />
+                <div className="glass-panel rounded-2xl overflow-hidden border border-zinc-900 bg-zinc-950/20">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-zinc-900 bg-zinc-950/60 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                          <th className="py-4 px-6 text-center w-16">Rank</th>
+                          <th className="py-4 px-6">Candidate</th>
+                          <th className="py-4 px-6">Applied On</th>
+                          <th className="py-4 px-6 text-center">AI Score</th>
+                          <th className="py-4 px-6 text-center">Security Integrity</th>
+                          <th className="py-4 px-6 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-900/60 text-xs">
+                        {[...jobCandidates]
+                          .sort((a, b) => {
+                            if (a.cheatingFlagged && !b.cheatingFlagged) return 1;
+                            if (!a.cheatingFlagged && b.cheatingFlagged) return -1;
+                            const scoreA = (a.scoreTechnical + a.scoreCommunication) / 2;
+                            const scoreB = (b.scoreTechnical + b.scoreCommunication) / 2;
+                            return scoreB - scoreA;
+                          })
+                          .map((c, index) => {
+                            const avgScore = ((c.scoreTechnical + c.scoreCommunication) / 2).toFixed(0);
+                            const appliedTime = c.createdAt 
+                              ? new Date(c.createdAt).toLocaleString(undefined, {
+                                  dateStyle: 'medium',
+                                  timeStyle: 'short'
+                                })
+                              : 'Pending';
+
+                            return (
+                              <tr key={c.id} className="hover:bg-zinc-900/20 transition-all group">
+                                <td className="py-4 px-6 text-center font-extrabold">
+                                  {c.cheatingFlagged ? (
+                                    <span className="text-zinc-600 text-xs font-mono">-</span>
+                                  ) : (
+                                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold border ${
+                                      index === 0 
+                                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_8px_rgba(249,115,22,0.1)]' 
+                                        : index === 1
+                                        ? 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                                        : index === 2
+                                        ? 'bg-amber-950/20 text-amber-600 border-amber-900/40'
+                                        : 'bg-zinc-950 text-zinc-500 border-zinc-900'
+                                    }`}>
+                                      {index + 1}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div className="font-extrabold text-gray-200 group-hover:text-white transition-colors">{c.name}</div>
+                                  <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{c.email}</div>
+                                </td>
+                                <td className="py-4 px-6 text-zinc-400 font-medium">
+                                  {appliedTime}
+                                </td>
+                                <td className="py-4 px-6 text-center">
+                                  {c.status !== 'Completed' ? (
+                                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-extrabold uppercase border ${
+                                      c.status === 'Failed' 
+                                        ? 'bg-rose-950/40 text-rose-400 border-rose-500/20' 
+                                        : 'bg-zinc-950 text-zinc-500 border-zinc-900 animate-pulse'
+                                    }`}>
+                                      {c.status}
+                                    </span>
+                                  ) : (
+                                    <div className="inline-flex flex-col items-center">
+                                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${
+                                        c.cheatingFlagged 
+                                          ? 'bg-rose-950/40 text-rose-400 border-rose-500/20' 
+                                          : parseInt(avgScore) >= 70
+                                          ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
+                                          : 'bg-orange-950/40 text-orange-400 border-orange-500/20'
+                                      }`}>
+                                        {c.cheatingFlagged ? 'Flagged' : `${avgScore}%`}
+                                      </span>
+                                      <span className="text-[8px] text-zinc-500 mt-1 font-mono">T: {c.scoreTechnical}% | C: {c.scoreCommunication}%</span>
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="py-4 px-6 text-center">
+                                  {c.cheatingFlagged ? (
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-rose-950/40 border border-rose-500/20 text-[9px] font-extrabold text-rose-400 uppercase cursor-help group/tooltip relative">
+                                      <AlertTriangle className="w-3.5 h-3.5" /> Cheated
+                                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block bg-zinc-950 border border-zinc-800 text-zinc-300 text-[10px] p-3 rounded-lg w-56 text-left leading-normal shadow-2xl z-50 normal-case font-normal">
+                                        <p className="font-bold text-rose-400 mb-1">AI Audit Flagged Cheating:</p>
+                                        {c.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}
+                                      </div>
+                                    </div>
+                                  ) : c.status === 'Completed' ? (
+                                    <div className="inline-flex items-center gap-1.5 text-[9px] font-extrabold text-emerald-400 uppercase">
+                                      <CheckCircle className="w-3.5 h-3.5" /> Verified
+                                    </div>
+                                  ) : (
+                                    <span className="text-zinc-600 text-xs font-mono">-</span>
+                                  )}
+                                </td>
+                                <td className="py-4 px-6 text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => setSelectedCandidate(c as any)}
+                                      className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-extrabold text-zinc-300 hover:text-white rounded-lg transition-all"
+                                    >
+                                      AI Report
+                                    </button>
+                                    
+                                    {/* Ask Resume Trigger */}
+                                    {c.status === 'Completed' && (
+                                      <>
+                                        {c.candidateResumeUrl ? (
+                                          <button
+                                            onClick={() => handleDownloadResume(c.id)}
+                                            className="px-2.5 py-1.5 bg-emerald-950/40 border border-emerald-500/20 hover:border-emerald-500/40 text-[10px] font-extrabold text-emerald-400 hover:text-white rounded-lg transition-all flex items-center gap-1"
+                                          >
+                                            <FileText className="w-3 h-3" /> Resume
+                                          </button>
+                                        ) : c.resumeRequested ? (
+                                          <span className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-900 text-[10px] font-bold text-zinc-500 rounded-lg">
+                                            Requested
+                                          </span>
+                                        ) : !selectedJob.isActive ? (
+                                          <button
+                                            onClick={() => handleAskResume(c.id)}
+                                            className="px-2.5 py-1.5 bg-orange-950/40 border border-orange-500/20 hover:border-orange-500/40 text-[10px] font-extrabold text-orange-400 hover:text-white rounded-lg transition-all"
+                                          >
+                                            Ask Resume
+                                          </button>
+                                        ) : null}
+                                      </>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               ) : (
                 <div className="glass-panel rounded-2xl p-10 text-center">
                   <Users className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
@@ -700,29 +932,50 @@ export const RecruiterDashboard: React.FC = () => {
                 </button>
               </div>
 
-              {/* Ephemeral Video Storage Notice */}
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 mb-5 flex items-center gap-3 relative overflow-hidden">
-                <ShieldAlert className="w-5 h-5 text-accentPurple" />
-                <div>
-                  <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Ephemeral Video Storage Policy</h4>
-                  <p className="text-[10px] text-zinc-400 mt-0.5">The candidate's raw video file was securely purged from storage immediately after transcription and score parsing.</p>
+              {/* Cheating Warning Notice */}
+              {selectedCandidate.cheatingFlagged && (
+                <div className="bg-rose-950/40 border border-rose-500/30 rounded-xl p-4 mb-5 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-rose-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider">AI Cheating Telemetry Alert</h4>
+                    <p className="text-[10px] text-zinc-300 mt-1">{selectedCandidate.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}</p>
+                  </div>
                 </div>
+              )}
+
+              {/* Ephemeral Video Storage Notice */}
+              <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 mb-5 flex items-center justify-between gap-3 relative overflow-hidden">
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="w-5 h-5 text-accentPurple flex-shrink-0" />
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider">Ephemeral Video Storage Policy</h4>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">The candidate's raw video file was securely purged from storage immediately after transcription and score parsing.</p>
+                  </div>
+                </div>
+                {selectedCandidate.candidateResumeUrl && (
+                  <button
+                    onClick={() => handleDownloadResume(selectedCandidate.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-xs font-bold text-zinc-300 hover:text-white transition-all flex-shrink-0"
+                  >
+                    <FileText className="w-4 h-4 text-accentCyan" /> Resume
+                  </button>
+                )}
               </div>
 
               {/* AI Scores Row */}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Technical Skills</span>
-                  <span className="text-xl font-extrabold text-accentCyan">{selectedCandidate.scoreTechnical * 10}/100</span>
+                  <span className="text-xl font-extrabold text-accentCyan">{selectedCandidate.scoreTechnical}/100</span>
                 </div>
                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Communication</span>
-                  <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication * 10}/100</span>
+                  <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication}/100</span>
                 </div>
                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Anti-Cheat Score</span>
-                  <span className={`text-xl font-extrabold ${selectedCandidate.scoreTelemetry < 5 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {selectedCandidate.scoreTelemetry * 10}/100
+                  <span className={`text-xl font-extrabold ${selectedCandidate.cheatingFlagged ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    {selectedCandidate.scoreTelemetry}/100
                   </span>
                 </div>
               </div>

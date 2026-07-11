@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS jobs (
     requirements TEXT,
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     token VARCHAR(100) UNIQUE NOT NULL, -- Invitation token for candidates
+    is_active BOOLEAN DEFAULT TRUE,
+    top_k_filter INTEGER DEFAULT 3,
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + INTERVAL '3 days'),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -43,6 +46,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     resume_url TEXT,
+    password_hash VARCHAR(255) DEFAULT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -58,6 +63,9 @@ CREATE TABLE IF NOT EXISTS submissions (
     score_technical INT CHECK (score_technical >= 0 AND score_technical <= 100),
     score_telemetry INT CHECK (score_telemetry >= 0 AND score_telemetry <= 100),
     ai_feedback JSONB, -- stores detailed extraction report, transcripts, etc.
+    resume_requested BOOLEAN DEFAULT FALSE,
+    cheating_flagged BOOLEAN DEFAULT FALSE,
+    cheating_details TEXT DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

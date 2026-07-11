@@ -45,6 +45,8 @@ class JobCreate(BaseModel):
     description: str = Field(..., description="Full description of duties and roles")
     requirements: Optional[str] = Field(None, description="Legacy parameter")
     questions: List[str] = Field(default_factory=list, description="Array of assessment prompts")
+    top_k_filter: Optional[int] = Field(3, description="Number of candidates to filter/shortlist")
+    expires_at: Optional[datetime] = Field(None, description="Job closing timestamp")
 
 class JobUpdate(BaseModel):
     title: Optional[str] = None
@@ -52,6 +54,8 @@ class JobUpdate(BaseModel):
     requirements: Optional[str] = None
     questions: Optional[List[str]] = None
     is_active: Optional[bool] = None
+    top_k_filter: Optional[int] = None
+    expires_at: Optional[datetime] = None
 
 class JobResponse(BaseModel):
     id: UUID
@@ -62,6 +66,8 @@ class JobResponse(BaseModel):
     created_by: Optional[UUID]
     token: Optional[str] = None
     is_active: Optional[bool] = True
+    top_k_filter: Optional[int] = 3
+    expires_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
@@ -95,6 +101,10 @@ class SubmissionResponse(BaseModel):
     score_technical: Optional[int]
     score_telemetry: Optional[int]
     ai_feedback: Optional[Dict[str, Any]]
+    resume_requested: Optional[bool] = False
+    cheating_flagged: Optional[bool] = False
+    cheating_details: Optional[str] = None
+    candidate_resume_url: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -115,3 +125,16 @@ class AdminDashboardStats(BaseModel):
     total_candidates: int
     total_submissions: int
     submissions_by_status: Dict[str, int]
+
+# --- Candidate Authenticators ---
+
+class CandidateRegister(BaseModel):
+    email: str = Field(..., description="Unique email address of candidate")
+    otp: str = Field(..., description="OTP confirmation code")
+    password: str = Field(..., min_length=6, description="Candidate portal password")
+    first_name: str = Field(..., description="First name")
+    last_name: str = Field(..., description="Last name")
+
+class CandidateLogin(BaseModel):
+    email: str = Field(..., description="Email address")
+    password: str = Field(..., description="Candidate password")

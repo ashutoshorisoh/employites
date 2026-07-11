@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   name?: string;
   candidateToken?: string;
+  resume_url?: string;
   [key: string]: any; // Keep all potential custom fields from the API response
 }
 
@@ -19,6 +20,9 @@ interface AuthState {
   registerWithPassword: (name: string, email: string, password: string, otp: string) => Promise<{ success: boolean; message: string; role?: UserRole }>;
   requestRegisterOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   loginAsCandidate: (token: string, email: string, firstName: string, lastName: string) => Promise<{ success: boolean; role?: UserRole; message?: string }>;
+  loginCandidate: (email: string, password: string) => Promise<{ success: boolean; message: string; role?: UserRole }>;
+  registerCandidate: (firstName: string, lastName: string, email: string, password: string, otp: string) => Promise<{ success: boolean; message: string; role?: UserRole }>;
+  requestCandidateOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   updateUser: (fields: Partial<User>) => void;
   initAuth: () => Promise<void>;
@@ -32,45 +36,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: true,
 
   initAuth: async () => {
-    const storedToken = localStorage.getItem('skreener_token');
-    const storedUserStr = localStorage.getItem('skreener_user');
-    
-    if (storedToken) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${storedToken}`
-          }
-        });
-        if (res.ok) {
-          const userData = await res.json();
-          // Merge custom stored user properties with fresh server profile details
-          const existingUser = storedUserStr ? JSON.parse(storedUserStr) : {};
-          const mergedUser: User = {
-            ...existingUser,
-            ...userData,
-            id: userData.id,
-            email: userData.email,
-            role: userData.role as UserRole,
-            name: userData.name
-          };
-          
-          set({ token: storedToken, user: mergedUser, loading: false });
-          localStorage.setItem('skreener_user', JSON.stringify(mergedUser));
-        } else {
-          get().logout();
-          set({ loading: false });
-        }
-      } catch (e) {
-        console.error('Failed to validate active session:', e);
-        if (storedUserStr) {
-          set({ token: storedToken, user: JSON.parse(storedUserStr), loading: false });
-        } else {
-          set({ loading: false });
-        }
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const userData = await res.json();
+        const activeUser: User = {
+          ...userData,
+          id: userData.id,
+          email: userData.email,
+          role: userData.role as UserRole,
+          name: userData.name
+        };
+        
+        set({ token: 'session_active', user: activeUser, loading: false });
+      } else {
+        set({ token: null, user: null, loading: false });
       }
-    } else {
-      set({ loading: false });
+    } catch (e) {
+      console.error('Failed to validate active session:', e);
+      set({ token: null, user: null, loading: false });
     }
   },
 
@@ -79,7 +65,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
       
       const data = await res.json();
@@ -87,32 +74,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, message: data.detail || 'Incorrect email or password.' };
       }
 
-      const activeToken = data.access_token;
-      localStorage.setItem('skreener_token', activeToken);
-
-      // Fetch user profile info
-      const userRes = await fetch(`${API_BASE_URL}/auth/me`, {
-        headers: { 'Authorization': `Bearer ${activeToken}` }
-      });
+      const activeUser: User = {
+        ...data,
+        id: data.id,
+        email: data.email || email,
+        role: data.role as UserRole,
+        name: data.name
+      };
       
-      if (userRes.ok) {
-        const userData = await userRes.json();
-        // Keep ALL returned data from the API response payload (merging data & userData)
-        const activeUser: User = {
-          ...data,
-          ...userData,
-          id: userData.id || data.id,
-          email: userData.email || data.email || email,
-          role: (userData.role || data.role) as UserRole,
-          name: userData.name || data.name
-        };
-        
-        set({ token: activeToken, user: activeUser });
-        localStorage.setItem('skreener_user', JSON.stringify(activeUser));
-        return { success: true, message: 'Logged in successfully.', role: activeUser.role };
-      }
-      
-      return { success: false, message: 'Failed to retrieve profile data.' };
+      set({ token: 'session_active', user: activeUser });
+      return { success: true, message: 'Logged in successfully.', role: activeUser.role };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, message: 'Connection to authentication server failed.' };
@@ -124,7 +95,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, otp, role: 'recruiter' })
+        body: JSON.stringify({ name, email, password, otp, role: 'recruiter' }),
+        credentials: 'include'
       });
 
       const data = await res.json();
@@ -132,32 +104,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, message: data.detail || 'Registration failed.' };
       }
 
-      const activeToken = data.access_token;
-      localStorage.setItem('skreener_token', activeToken);
-
-      // Fetch user profile info
-      const userRes = await fetch(`${API_BASE_URL}/auth/me`, {
-        headers: { 'Authorization': `Bearer ${activeToken}` }
-      });
-
-      if (userRes.ok) {
-        const userData = await userRes.json();
-        // Keep ALL returned data from the API response payload (merging data & userData)
-        const activeUser: User = {
-          ...data,
-          ...userData,
-          id: userData.id || data.id,
-          email: userData.email || data.email || email,
-          role: (userData.role || data.role) as UserRole,
-          name: userData.name || data.name
-        };
-        
-        set({ token: activeToken, user: activeUser });
-        localStorage.setItem('skreener_user', JSON.stringify(activeUser));
-        return { success: true, message: 'Registered and logged in successfully.', role: activeUser.role };
-      }
-
-      return { success: false, message: 'Failed to retrieve profile data.' };
+      const activeUser: User = {
+        ...data,
+        id: data.id,
+        email: data.email || email,
+        role: data.role as UserRole,
+        name: data.name
+      };
+      
+      set({ token: 'session_active', user: activeUser });
+      return { success: true, message: 'Registered and logged in successfully.', role: activeUser.role };
     } catch (error) {
       console.error('Registration error:', error);
       return { success: false, message: 'Connection to authentication server failed.' };
@@ -192,7 +148,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           email: email,
           first_name: firstName,
           last_name: lastName
-        })
+        }),
+        credentials: 'include'
       });
 
       const data = await res.json();
@@ -200,21 +157,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, message: data.detail || 'Invalid invitation code or details.' };
       }
 
-      const activeToken = data.access_token;
-      localStorage.setItem('skreener_token', activeToken);
-
-      // Keep ALL returned data from the API response payload
       const activeUser: User = {
         ...data,
-        id: data.id || 'candidate_user',
+        id: data.id,
         email: data.email || email,
-        role: (data.role || 'candidate') as UserRole,
+        role: data.role as UserRole,
         name: data.name || `${firstName} ${lastName}`,
-        candidateToken: data.candidateToken || tokenInput
+        candidateToken: tokenInput
       };
       
-      set({ token: activeToken, user: activeUser });
-      localStorage.setItem('skreener_user', JSON.stringify(activeUser));
+      set({ token: 'session_active', user: activeUser });
       return { success: true, role: 'candidate' };
     } catch (error) {
       console.error('Candidate checkin error:', error);
@@ -222,9 +174,90 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  loginCandidate: async (email, password) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/candidate/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, message: data.detail || 'Incorrect candidate credentials.' };
+      }
+
+      const activeUser: User = {
+        ...data,
+        id: data.id,
+        email: data.email || email,
+        role: 'candidate',
+        name: data.name
+      };
+      
+      set({ token: 'session_active', user: activeUser });
+      return { success: true, message: 'Logged in successfully.', role: 'candidate' };
+    } catch (error) {
+      console.error('Candidate login error:', error);
+      return { success: false, message: 'Connection to candidate auth failed.' };
+    }
+  },
+
+  registerCandidate: async (firstName, lastName, email, password, otp) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/candidate/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password, otp }),
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, message: data.detail || 'Candidate registration failed.' };
+      }
+
+      const activeUser: User = {
+        ...data,
+        id: data.id,
+        email: data.email || email,
+        role: 'candidate',
+        name: data.name
+      };
+      
+      set({ token: 'session_active', user: activeUser });
+      return { success: true, message: 'Registered successfully.', role: 'candidate' };
+    } catch (error) {
+      console.error('Candidate registration error:', error);
+      return { success: false, message: 'Connection to candidate auth failed.' };
+    }
+  },
+
+  requestCandidateOtp: async (email) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/candidate/otp/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, message: data.detail || 'Failed to dispatch verification code.' };
+      }
+      return { success: true, message: data.message || 'Verification code sent.' };
+    } catch (err) {
+      console.error('Candidate OTP error:', err);
+      return { success: false, message: 'Connection to candidate auth failed.' };
+    }
+  },
+
   logout: () => {
-    localStorage.removeItem('skreener_token');
-    localStorage.removeItem('skreener_user');
+    fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    }).catch(err => console.error('Failed to trigger server logout:', err));
+
     set({ token: null, user: null });
   },
 
@@ -233,7 +266,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (currentUser) {
       const updated = { ...currentUser, ...fields };
       set({ user: updated });
-      localStorage.setItem('skreener_user', JSON.stringify(updated));
     }
   }
 }));

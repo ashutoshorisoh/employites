@@ -118,4 +118,28 @@ class R2StorageService:
             logging.getLogger(__name__).error(f"Error downloading storage object {object_name}: {str(e)}")
             return False
 
+    def generate_presigned_get_url(self, object_name: str, expiration: int = 3600) -> str:
+        """
+        Generates a presigned GET URL for viewing/downloading an object.
+        """
+        s3_client = self._get_client()
+        bucket_name = "skreener-uploads"
+        if settings.STORAGE_BUCKET_NAME != "#reqd key":
+            bucket_name = settings.STORAGE_BUCKET_NAME
+        elif settings.R2_BUCKET_NAME != "#reqd key":
+            bucket_name = settings.R2_BUCKET_NAME
+
+        try:
+            url = s3_client.generate_presigned_url(
+                ClientMethod="get_object",
+                Params={
+                    "Bucket": bucket_name,
+                    "Key": object_name
+                },
+                ExpiresIn=expiration
+            )
+            return url
+        except Exception:
+            return f"https://dev-storage.skreener.local/{bucket_name}/{object_name}?signature=mock_get"
+
 storage_service = R2StorageService()

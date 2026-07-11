@@ -124,11 +124,7 @@ export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUp
     setStatus('uploading');
     setUploadProgress(10);
 
-    const token = localStorage.getItem('skreener_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
@@ -137,6 +133,7 @@ export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUp
       const res = await fetch(`${API_BASE_URL}/submissions/upload-url`, {
         method: 'POST',
         headers: headers,
+        credentials: 'include',
         body: JSON.stringify({
           filename: `answer_${Date.now()}.webm`,
           content_type: 'video/webm'

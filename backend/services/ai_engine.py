@@ -123,7 +123,7 @@ class AIEngine:
                 questions_context += "\n"
 
             prompt = (
-                "You are the Skreener AI Evaluation Engine. "
+                "You are the Employites AI Evaluation Engine. "
                 "Your task is to analyze candidate interview submissions based on video, audio, or transcript URLs.\n\n"
                 f"Target Job: {job_title}\n"
                 f"Job Description: {job_description}\n\n"
@@ -132,12 +132,15 @@ class AIEngine:
                 "1. For each video file provided, transcribe the candidate's spoken response completely and accurately.\n"
                 "2. Evaluate whether the candidate's response is relevant to the specific question asked. Compare the answer against the question context.\n"
                 "3. Assess if the candidate's response is coherent, accurate, and relevant in the context of the overall Target Job title and Job Description.\n"
-                "4. If any answer is irrelevant, off-topic, generic, or completely fails to address the question prompt, explicitly state this in their 'weaknesses' and heavily penalize their 'technical_score' and 'communication_score'.\n\n"
+                "4. If any answer is irrelevant, off-topic, generic, or completely fails to address the question prompt, explicitly state this in their 'weaknesses' and heavily penalize their 'technical_score' and 'communication_score'.\n"
+                "5. CHEATING AUDIT: Carefully analyze the candidate's responses and behavioral patterns. Look for cheating indicators like reading off scripts or screens (continuous horizontal eye movements, robotic pacing), plagiarism, voice sync mismatches, secondary whispers, or someone typing in the background. If you detect cheating, set 'cheating_flagged' to true and explain the indicators in 'cheating_details'. Else set them to false and empty.\n\n"
                 "You MUST return your output as a JSON object with these exact keys:\n"
                 "{\n"
                 '  "communication_score": (int 0-100),\n'
                 '  "technical_score": (int 0-100),\n'
                 '  "telemetry_score": (int 0-100),\n'
+                '  "cheating_flagged": (boolean true or false),\n'
+                '  "cheating_details": (string explaining the cheat indicators found, or empty string if none),\n'
                 '  "summary": (string summary of candidate performance),\n'
                 '  "strengths": (list of strings),\n'
                 '  "weaknesses": (list of strings),\n'
@@ -187,6 +190,8 @@ class AIEngine:
                 "score_communication": result.get("communication_score", 0),
                 "score_technical": result.get("technical_score", 0),
                 "score_telemetry": result.get("telemetry_score", 0),
+                "cheating_flagged": bool(result.get("cheating_flagged", False)),
+                "cheating_details": result.get("cheating_details", ""),
                 "ai_feedback": {
                     "summary": result.get("summary", ""),
                     "strengths": result.get("strengths", []),
@@ -201,6 +206,8 @@ class AIEngine:
                 "score_communication": 0,
                 "score_technical": 0,
                 "score_telemetry": 0,
+                "cheating_flagged": False,
+                "cheating_details": "AI evaluation failed.",
                 "ai_feedback": {
                     "summary": f"Failed to complete AI evaluation due to error: {str(e)}",
                     "strengths": [],

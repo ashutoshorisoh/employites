@@ -166,7 +166,7 @@ class LocalJSONDatabaseFallback:
         admin_id = uuid.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
         self.users[admin_id] = {
             "id": admin_id,
-            "email": "admin@skreener.ai",
+            "email": "admin@employites.com",
             # Hashed version of 'admin123'
             "password_hash": "pbkdf2_sha256$100000$secure_salt$00e6ebb565d66c2e6e607385ddcfcddbd78f69829f02fc7018c0d1245e18cc28",
             "role": "admin",
@@ -361,7 +361,7 @@ class SupabasePostgresDatabase:
                 admin_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
                 self.users[uuid.UUID(admin_id)] = {
                     "id": uuid.UUID(admin_id),
-                    "email": "admin@skreener.ai",
+                    "email": "admin@employites.com",
                     # Hashed version of 'admin123'
                     "password_hash": "pbkdf2_sha256$100000$secure_salt$00e6ebb565d66c2e6e607385ddcfcddbd78f69829f02fc7018c0d1245e18cc28",
                     "role": "admin",

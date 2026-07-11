@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # App Settings
-    APP_NAME: str = "Skreener API"
+    APP_NAME: str = "Employites API"
     DEBUG: bool = False
     
     # Security / JWT

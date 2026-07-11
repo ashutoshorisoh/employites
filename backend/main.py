@@ -22,15 +22,18 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI App
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Skreener automated video candidate screening API.",
+    description="Employites automated video candidate screening API.",
     version="1.0.0",
     debug=settings.DEBUG
 )
 
-# Configure CORS Middleware
+# Configure CORS Middleware (requires explicit origins when allow_credentials=True)
+origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000")
+origins = [origin.strip() for origin in origins_str.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust to specific domains in production deployment
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,4 +72,4 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Optional startup log check for keys
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Initializing Skreener FastAPI Services...")
+    logger.info("Initializing Employites FastAPI Services...")

@@ -36,7 +36,7 @@ export const Navigation: React.FC = () => {
           </div>
           <div>
             <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-zinc-400 bg-clip-text text-transparent">
-              Screener
+              Employites
             </span>
             <span className="block text-[9px] font-bold text-accentCyan tracking-widest uppercase">Async Interviews</span>
           </div>

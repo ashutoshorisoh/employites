@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+from backend.api.routes.auth import get_current_user
 from backend.db.client import db
 from backend.services.storage import storage_service
 from backend.services.ai_engine import ai_engine
@@ -64,6 +65,8 @@ async def run_ai_evaluation_background(
         submission["score_communication"] = eval_result.get("score_communication")
         submission["score_technical"] = eval_result.get("score_technical")
         submission["score_telemetry"] = eval_result.get("score_telemetry")
+        submission["cheating_flagged"] = eval_result.get("cheating_flagged", False)
+        submission["cheating_details"] = eval_result.get("cheating_details", "")
         submission["ai_feedback"] = eval_result.get("ai_feedback")
         submission["updated_at"] = datetime.now(timezone.utc)
         
@@ -153,6 +156,9 @@ async def register_submission(payload: SubmissionCreate, background_tasks: Backg
         existing_sub["score_communication"] = None
         existing_sub["score_technical"] = None
         existing_sub["score_telemetry"] = None
+        existing_sub["cheating_flagged"] = False
+        existing_sub["cheating_details"] = None
+        existing_sub["resume_requested"] = False
         existing_sub["ai_feedback"] = None
         existing_sub["updated_at"] = datetime.now(timezone.utc)
         db.submissions[existing_sub["id"]] = existing_sub
@@ -179,6 +185,9 @@ async def register_submission(payload: SubmissionCreate, background_tasks: Backg
         "score_communication": None,
         "score_technical": None,
         "score_telemetry": None,
+        "cheating_flagged": False,
+        "cheating_details": None,
+        "resume_requested": False,
         "ai_feedback": None,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc)
@@ -257,6 +266,10 @@ async def list_submissions():
             "score_communication": s.get("score_communication"),
             "score_technical": s.get("score_technical"),
             "score_telemetry": s.get("score_telemetry"),
+            "cheating_flagged": s.get("cheating_flagged", False),
+            "cheating_details": s.get("cheating_details"),
+            "resume_requested": s.get("resume_requested", False),
+            "candidate_resume_url": candidate.get("resume_url") if candidate else None,
             "ai_feedback": s.get("ai_feedback"),
             "created_at": s["created_at"],
             "updated_at": s["updated_at"]
@@ -279,7 +292,10 @@ async def get_submission(submission_id: uuid.UUID):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Submission not found"
         )
-    return submission
+    candidate = db.candidates.get(submission["candidate_id"])
+    res_dict = dict(submission)
+    res_dict["candidate_resume_url"] = candidate.get("resume_url") if candidate else None
+    return res_dict
 
 @router.put("/{submission_id}", response_model=SubmissionResponse)
 async def update_submission(submission_id: uuid.UUID, payload: SubmissionUpdate):
@@ -314,3 +330,50 @@ async def list_candidate_submissions(candidate_email: str):
         return []
 
     return [s for s in db.submissions.values() if s["candidate_id"] == candidate["id"]]
+
+@router.post("/{sub_id}/ask-resume")
+async def ask_resume(sub_id: uuid.UUID, current_user: dict = Depends(get_current_user)):
+    """
+    Recruiter triggers resume request for candidate. Saves state and emails candidate.
+    """
+    submission = db.submissions.get(sub_id)
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found.")
+        
+    job = db.jobs.get(submission["job_id"])
+    if not job or str(job["created_by"]) != str(current_user["id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to request resume for this candidate.")
+        
+    submission["resume_requested"] = True
+    db.submissions[sub_id] = submission
+    
+    # Trigger email to candidate
+    candidate = db.candidates.get(submission["candidate_id"])
+    if candidate:
+        await notification_service.send_resume_request_email(
+            email=candidate["email"],
+            job_title=job["title"],
+            recruiter_name=current_user.get("name") or current_user["email"]
+        )
+    return {"success": True, "message": "Resume request sent successfully."}
+
+@router.get("/resume-download/{sub_id}")
+async def download_resume(sub_id: uuid.UUID):
+    """
+    Generate a secure presigned GET URL for viewing the candidate's uploaded resume.
+    """
+    submission = db.submissions.get(sub_id)
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found.")
+        
+    candidate = db.candidates.get(submission["candidate_id"])
+    if not candidate or not candidate.get("resume_url"):
+        raise HTTPException(status_code=404, detail="No resume uploaded for this candidate yet.")
+        
+    resume_path = candidate["resume_url"]
+    if resume_path.startswith("uploads/"):
+        url = storage_service.generate_presigned_get_url(resume_path)
+    else:
+        url = resume_path
+        
+    return {"url": url}

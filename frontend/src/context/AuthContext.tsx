@@ -34,6 +34,9 @@ export const useAuth = () => {
   const registerWithPassword = useAuthStore((state) => state.registerWithPassword);
   const requestRegisterOtp = useAuthStore((state) => state.requestRegisterOtp);
   const loginAsCandidate = useAuthStore((state) => state.loginAsCandidate);
+  const loginCandidate = useAuthStore((state) => state.loginCandidate);
+  const registerCandidate = useAuthStore((state) => state.registerCandidate);
+  const requestCandidateOtp = useAuthStore((state) => state.requestCandidateOtp);
   const logout = useAuthStore((state) => state.logout);
   const updateUser = useAuthStore((state) => state.updateUser);
 
@@ -45,6 +48,9 @@ export const useAuth = () => {
     registerWithPassword,
     requestRegisterOtp,
     loginAsCandidate,
+    loginCandidate,
+    registerCandidate,
+    requestCandidateOtp,
     logout,
     updateUser,
   };

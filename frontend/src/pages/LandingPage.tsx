@@ -38,14 +38,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
           </div>
           
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-white">
-            Async video vetting.<br />
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-accentPurple bg-clip-text text-transparent">
-              Automated by AI.
+            Vetting candidates based on resumes?<br />
+            <span className="bg-gradient-to-r from-white via-zinc-200 to-rose-500 bg-clip-text text-transparent">
+              Majority lie or pad their stack.
             </span>
           </h1>
           
           <p className="text-xs md:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
-            Screen candidates automatically. Get detailed communication ratings, technical depth analysis, and anti-cheat telemetry parsed by Gemini AI.
+            Stop wasting hours filters-vetting resumes. Employites shortlists candidates based on their actual coding skills, communication depth, and anti-cheating telemetry parsed by Gemini AI.
           </p>
 
           {/* Quick Actions */}
@@ -162,7 +162,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
                   <div>
                     <h4 className="font-extrabold text-xs text-white uppercase tracking-wider mb-1">AI Ingestion & Grading</h4>
                     <p className="text-[11px] text-zinc-400 leading-relaxed">
-                      Asynchronous workers download clips, evaluate responses, detect fraud alerts, and rank candidate logs on the Kanban board.
+                      Asynchronous workers download clips, evaluate responses, detect fraud alerts, and rank candidate logs on the Leaderboard.
                     </p>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
                     <Check className="w-3.5 h-3.5 text-accentPurple flex-shrink-0" /> Active Telemetry integrity flags
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-accentPurple flex-shrink-0" /> Full Kanban Board Pipeline
+                    <Check className="w-3.5 h-3.5 text-accentPurple flex-shrink-0" /> Full Candidate Leaderboard & Rankings
                   </li>
                 </ul>
               </div>
@@ -313,7 +313,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
       {/* Footer */}
       <footer className="border-t border-zinc-900/60 py-12 bg-[#040405] text-center relative z-10">
         <p className="text-[10px] text-zinc-650 tracking-wider">
-          © {new Date().getFullYear()} Screener AI. All rights reserved. Platform secure checkout by Paddle.
+          © {new Date().getFullYear()} Employites. All rights reserved. Platform secure checkout by Paddle.
         </p>
       </footer>
 

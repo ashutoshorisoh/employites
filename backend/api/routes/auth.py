@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional
 from datetime import datetime, timezone, timedelta
 import uuid
 import logging
@@ -12,19 +13,31 @@ from backend.core.security import (
 from backend.services.notification import notification_service
 from backend.db.client import db
 from backend.models.pydantic_schemas import (
-    OTPRequest, OTPVerify, TokenResponse, UserRegister, UserLogin, CandidateCheckin, RegisterOTPRequest
+    OTPRequest, OTPVerify, TokenResponse, UserRegister, UserLogin, CandidateCheckin, RegisterOTPRequest,
+    CandidateRegister, CandidateLogin
 )
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-security_scheme = HTTPBearer()
+security_scheme = HTTPBearer(auto_error=False)
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_scheme)) -> dict:
+def get_current_user(request: Request, credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)) -> dict:
     """
     Dependency to authenticate and return the current user profile from JWT payload.
-    Queries the database table (Supabase or local JSON fallback).
+    Supports either an Authorization header (Bearer token) or a secure 'skreener_token' cookie.
     """
-    token = credentials.credentials
+    token = None
+    if credentials:
+        token = credentials.credentials
+    else:
+        token = request.cookies.get("skreener_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication token is missing.",
+        )
+        
     payload = verify_access_token(token)
     user_id_str = payload.get("sub")
     if not user_id_str:
@@ -103,8 +116,8 @@ async def request_registration_otp(payload: RegisterOTPRequest):
     
     return {"message": "Verification code has been sent successfully to your email."}
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register_user(payload: UserRegister):
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register_user(payload: UserRegister, response: Response):
     """
     Registers a new recruiter or administrator after verifying email OTP.
     Hashes the password and generates a JWT.
@@ -177,14 +190,30 @@ async def register_user(payload: UserRegister):
         }
     )
     
+    # Set secure HttpOnly cookie
+    response.set_cookie(
+        key="skreener_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400,
+        path="/"
+    )
+    
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "role": role
+        "id": str(user_id),
+        "email": email,
+        "role": role,
+        "name": payload.name.strip(),
+        "is_subscribed": False,
+        "plan_name": "free",
+        "subscription_status": "inactive",
+        "subscription_ends_at": None
     }
 
-@router.post("/login", response_model=TokenResponse)
-async def login_user(payload: UserLogin):
+@router.post("/login")
+async def login_user(payload: UserLogin, response: Response):
     """
     Normal login endpoint requiring email and password verification.
     """
@@ -220,14 +249,30 @@ async def login_user(payload: UserLogin):
         }
     )
     
+    # Set secure HttpOnly cookie
+    response.set_cookie(
+        key="skreener_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400,
+        path="/"
+    )
+    
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "role": user["role"]
+        "id": str(user["id"]),
+        "email": user["email"],
+        "role": user["role"],
+        "name": user.get("name"),
+        "is_subscribed": user.get("is_subscribed", False),
+        "plan_name": user.get("plan_name", "free"),
+        "subscription_status": user.get("subscription_status", "inactive"),
+        "subscription_ends_at": user.get("subscription_ends_at").isoformat() if user.get("subscription_ends_at") and hasattr(user.get("subscription_ends_at"), "isoformat") else user.get("subscription_ends_at")
     }
 
-@router.post("/candidate/checkin", response_model=TokenResponse)
-async def checkin_candidate(payload: CandidateCheckin):
+@router.post("/candidate/checkin")
+async def checkin_candidate(payload: CandidateCheckin, response: Response):
     """
     Candidate access/check-in endpoint.
     Validates token, registers candidate, creates a submission record, and issues a JWT.
@@ -313,10 +358,22 @@ async def checkin_candidate(payload: CandidateCheckin):
         }
     )
     
+    # Set secure HttpOnly cookie
+    response.set_cookie(
+        key="skreener_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400,
+        path="/"
+    )
+    
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "role": "candidate"
+        "id": str(candidate_id),
+        "email": email,
+        "role": "candidate",
+        "name": f"{candidate.get('first_name', '')} {candidate.get('last_name', '')}".strip() or "Candidate"
     }
 
 @router.post("/otp/request", status_code=status.HTTP_200_OK)
@@ -343,8 +400,8 @@ async def request_otp(payload: OTPRequest):
     
     return {"message": "OTP has been sent successfully to your email."}
 
-@router.post("/otp/verify", response_model=TokenResponse)
-async def verify_otp(payload: OTPVerify):
+@router.post("/otp/verify")
+async def verify_otp(payload: OTPVerify, response: Response):
     """
     Verify the 6-digit OTP code and generate a JWT access token.
     """
@@ -410,11 +467,35 @@ async def verify_otp(payload: OTPVerify):
         }
     )
     
+    # Set secure HttpOnly cookie
+    response.set_cookie(
+        key="skreener_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400,
+        path="/"
+    )
+    
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "role": user["role"]
+        "id": str(user["id"]),
+        "email": user["email"],
+        "role": user["role"],
+        "name": user.get("name"),
+        "is_subscribed": user.get("is_subscribed", False),
+        "plan_name": user.get("plan_name", "free"),
+        "subscription_status": user.get("subscription_status", "inactive"),
+        "subscription_ends_at": user.get("subscription_ends_at").isoformat() if user.get("subscription_ends_at") and hasattr(user.get("subscription_ends_at"), "isoformat") else user.get("subscription_ends_at")
     }
+
+@router.post("/logout")
+async def logout_user(response: Response):
+    """
+    Clear the secure authentication cookie to log out the user.
+    """
+    response.delete_cookie(key="skreener_token", path="/")
+    return {"message": "Logged out successfully."}
 
 @router.get("/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
@@ -429,5 +510,226 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "is_subscribed": current_user.get("is_subscribed", False),
         "plan_name": current_user.get("plan_name", "free"),
         "subscription_status": current_user.get("subscription_status", "inactive"),
-        "subscription_ends_at": current_user.get("subscription_ends_at").isoformat() if current_user.get("subscription_ends_at") and hasattr(current_user.get("subscription_ends_at"), "isoformat") else current_user.get("subscription_ends_at")
+        "subscription_ends_at": current_user.get("subscription_ends_at").isoformat() if current_user.get("subscription_ends_at") and hasattr(current_user.get("subscription_ends_at"), "isoformat") else current_user.get("subscription_ends_at"),
+        "resume_url": current_user.get("resume_url")
     }
+
+@router.get("/candidate/exists/{email}")
+async def check_candidate_exists(email: str):
+    email_clean = email.strip().lower()
+    for c in db.candidates.values():
+        if c["email"] == email_clean:
+            return {"exists": True, "has_password": c.get("password_hash") is not None}
+    return {"exists": False, "has_password": False}
+
+@router.post("/candidate/otp/request")
+async def candidate_otp_request(payload: OTPRequest):
+    email = payload.email.strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required.")
+        
+    otp = generate_otp()
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
+    
+    db.otp_store[email] = {
+        "email": email,
+        "otp_code": otp,
+        "expires_at": expiry
+    }
+    
+    await notification_service.send_otp_email(email, otp)
+    return {"success": True, "message": "Verification code has been successfully emailed."}
+
+@router.post("/candidate/register")
+async def candidate_register(payload: CandidateRegister, response: Response):
+    email = payload.email.strip().lower()
+    otp_code = payload.otp.strip()
+    
+    otp_record = db.otp_store.get(email)
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="No verification code requested for this email.")
+        
+    if datetime.now(timezone.utc) > otp_record["expires_at"]:
+        db.otp_store.pop(email, None)
+        raise HTTPException(status_code=400, detail="Verification code has expired.")
+        
+    if otp_record["otp_code"] != otp_code:
+        raise HTTPException(status_code=400, detail="Incorrect verification code.")
+        
+    db.otp_store.pop(email, None)
+    
+    # Check if candidate already registered with password
+    candidate = None
+    for c in db.candidates.values():
+        if c["email"] == email:
+            candidate = c
+            break
+            
+    hashed_pwd = hash_password(payload.password)
+    
+    if candidate:
+        candidate["password_hash"] = hashed_pwd
+        candidate["first_name"] = payload.first_name.strip()
+        candidate["last_name"] = payload.last_name.strip()
+        candidate["is_verified"] = True
+        candidate["updated_at"] = datetime.now(timezone.utc)
+        db.candidates[candidate["id"]] = candidate
+        candidate_id = candidate["id"]
+    else:
+        candidate_id = uuid.uuid4()
+        candidate = {
+            "id": candidate_id,
+            "email": email,
+            "first_name": payload.first_name.strip(),
+            "last_name": payload.last_name.strip(),
+            "password_hash": hashed_pwd,
+            "is_verified": True,
+            "resume_url": None,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        db.candidates[candidate_id] = candidate
+
+    access_token = create_access_token(
+        data={"sub": str(candidate_id), "email": email, "role": "candidate"}
+    )
+    
+    response.set_cookie(
+        key="skreener_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400,
+        path="/"
+    )
+    
+    return {
+        "id": str(candidate_id),
+        "email": email,
+        "role": "candidate",
+        "name": f"{payload.first_name.strip()} {payload.last_name.strip()}"
+    }
+
+@router.post("/candidate/login")
+async def candidate_login(payload: CandidateLogin, response: Response):
+    email = payload.email.strip().lower()
+    
+    candidate = None
+    for c in db.candidates.values():
+        if c["email"] == email:
+            candidate = c
+            break
+            
+    if not candidate or not candidate.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+        
+    if not verify_password(payload.password, candidate["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+        
+    access_token = create_access_token(
+        data={"sub": str(candidate["id"]), "email": email, "role": "candidate"}
+    )
+    
+    response.set_cookie(
+        key="skreener_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400,
+        path="/"
+    )
+    
+    return {
+        "id": str(candidate["id"]),
+        "email": email,
+        "role": "candidate",
+        "name": f"{candidate.get('first_name', '')} {candidate.get('last_name', '')}".strip() or "Candidate",
+        "resume_url": candidate.get("resume_url")
+    }
+
+@router.get("/candidate/applications")
+async def get_candidate_applications(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "candidate":
+        raise HTTPException(status_code=403, detail="Only candidates can access this resource.")
+        
+    candidate_id = str(current_user["id"])
+    submissions = [
+        s for s in db.submissions.values()
+        if str(s["candidate_id"]) == candidate_id
+    ]
+    
+    results = []
+    for s in submissions:
+        job = db.jobs.get(s["job_id"])
+        if not job:
+            continue
+            
+        is_active = job.get("is_active", True)
+        
+        status_text = "Pending"
+        if not is_active:
+            sub_list = [
+                sub for sub in db.submissions.values()
+                if str(sub["job_id"]) == str(job["id"]) and sub["status"] == "Completed"
+            ]
+            ranked = []
+            for sub in sub_list:
+                cand = db.candidates.get(sub["candidate_id"])
+                if not cand:
+                    continue
+                comm = sub.get("score_communication") or 0
+                tech = sub.get("score_technical") or 0
+                avg = (comm + tech) / 2
+                if sub.get("cheating_flagged", False):
+                    avg = -1.0
+                ranked.append({"cand_id": str(sub["candidate_id"]), "score": avg})
+                
+            ranked.sort(key=lambda x: x["score"], reverse=True)
+            k = job.get("top_k_filter", 3)
+            top_ids = [item["cand_id"] for item in ranked[:k]]
+            
+            if candidate_id in top_ids:
+                if s.get("resume_requested", False):
+                    status_text = "Shortlisted"
+                else:
+                    status_text = "Under Review"
+            else:
+                status_text = "Process Closed"
+                
+        results.append({
+            "submission_id": str(s["id"]),
+            "job_id": str(job["id"]),
+            "job_title": job["title"],
+            "job_description": job["description"],
+            "questions": job.get("questions", []),
+            "expires_at": job.get("expires_at").isoformat() if job.get("expires_at") and hasattr(job.get("expires_at"), "isoformat") else job.get("expires_at"),
+            "is_active": is_active,
+            "status": status_text,
+            "resume_requested": s.get("resume_requested", False),
+            "resume_url": current_user.get("resume_url"),
+            "cheating_flagged": s.get("cheating_flagged", False)
+        })
+        
+    return results
+
+from pydantic import BaseModel
+
+class ResumeUploadPayload(BaseModel):
+    resume_url: str
+
+@router.post("/candidate/upload-resume")
+async def upload_resume(payload: ResumeUploadPayload, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "candidate":
+        raise HTTPException(status_code=403, detail="Only candidates can submit resumes.")
+    
+    cand = db.candidates.get(current_user["id"])
+    if not cand:
+        raise HTTPException(status_code=404, detail="Candidate profile not found.")
+        
+    cand["resume_url"] = payload.resume_url
+    cand["updated_at"] = datetime.now(timezone.utc)
+    db.candidates[current_user["id"]] = cand
+    
+    return {"success": True, "resume_url": payload.resume_url}

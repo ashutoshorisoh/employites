@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from typing import List
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from backend.db.client import db
 from backend.models.pydantic_schemas import JobCreate, JobUpdate, JobResponse
 from backend.api.routes.auth import get_current_user
+from backend.services.notification import notification_service
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
@@ -56,6 +57,7 @@ async def create_job(payload: JobCreate, current_user: dict = Depends(get_curren
     Create a new job posting. Requires authentication.
     """
     job_id = uuid.uuid4()
+    expiry_time = payload.expires_at or (datetime.now(timezone.utc) + timedelta(days=3))
     new_job = {
         "id": job_id,
         "title": payload.title,
@@ -65,6 +67,8 @@ async def create_job(payload: JobCreate, current_user: dict = Depends(get_curren
         "created_by": current_user["id"],
         "token": f"INV-{uuid.uuid4().hex[:8].upper()}",
         "is_active": True,
+        "top_k_filter": payload.top_k_filter if payload.top_k_filter is not None else 3,
+        "expires_at": expiry_time,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc)
     }
@@ -106,6 +110,10 @@ async def update_job(
         job["requirements"] = payload.questions[0] if payload.questions else None
     if payload.is_active is not None:
         job["is_active"] = payload.is_active
+    if payload.top_k_filter is not None:
+        job["top_k_filter"] = payload.top_k_filter
+    if payload.expires_at is not None:
+        job["expires_at"] = payload.expires_at
         
     job["updated_at"] = datetime.now(timezone.utc)
     db.jobs[job_id] = job
@@ -132,3 +140,71 @@ async def delete_job(job_id: uuid.UUID, current_user: dict = Depends(get_current
 
     db.jobs.pop(job_id)
     return None
+
+@router.post("/{job_id}/close")
+async def close_job(job_id: uuid.UUID, current_user: dict = Depends(get_current_user)):
+    """
+    Close an active job posting, compile the leaderboard, and email the top K candidates' details to the recruiter.
+    """
+    job = db.jobs.get(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job listing not found."
+        )
+        
+    if str(job["created_by"]) != str(current_user["id"]) and current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to close this job listing."
+        )
+        
+    job["is_active"] = False
+    job["updated_at"] = datetime.now(timezone.utc)
+    db.jobs[job_id] = job
+    
+    # 1. Fetch completed submissions for this job
+    submissions = [
+        s for s in db.submissions.values()
+        if str(s["job_id"]) == str(job_id) and s["status"] == "Completed"
+    ]
+    
+    # 2. Score and sort candidates
+    scored_candidates = []
+    for s in submissions:
+        candidate = db.candidates.get(s["candidate_id"])
+        if not candidate:
+            continue
+            
+        comm = s.get("score_communication") or 0
+        tech = s.get("score_technical") or 0
+        
+        # Weighted aggregate score
+        avg_score = (comm + tech) / 2
+        
+        # Penalize cheating candidates to the bottom of the list
+        if s.get("cheating_flagged", False):
+            avg_score = -1.0
+            
+        scored_candidates.append({
+            "name": f"{candidate.get('first_name', '')} {candidate.get('last_name', '')}".strip() or "Candidate",
+            "email": candidate["email"],
+            "score": avg_score,
+            "cheating": s.get("cheating_flagged", False)
+        })
+        
+    # Sort candidates by score descending
+    scored_candidates.sort(key=lambda x: x["score"], reverse=True)
+    
+    # Get top K
+    k = job.get("top_k_filter", 3)
+    top_k = scored_candidates[:k]
+    
+    # Send email notification to recruiter
+    await notification_service.send_top_candidates_email(
+        email=current_user["email"],
+        job_title=job["title"],
+        candidates=top_k
+    )
+    
+    return {"success": True, "message": "Job closed and top candidates emailed.", "shortlisted": top_k}
