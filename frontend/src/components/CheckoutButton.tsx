@@ -8,11 +8,7 @@ interface CheckoutButtonProps {
   label?: string;
 }
 
-declare global {
-  interface Window {
-    Paddle?: any;
-  }
-}
+
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, "");
 
@@ -27,7 +23,7 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
 
   useEffect(() => {
     // If Paddle is already loaded globally, initialize if needed
-    if (window.Paddle) {
+    if ((window as any).Paddle) {
       setIsSdkLoaded(true);
       return;
     }
@@ -45,8 +41,8 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
 
       const isSandbox = !clientToken || clientToken.includes('test_') || clientToken.includes('sandbox');
 
-      if (window.Paddle) {
-        window.Paddle.Initialize({
+      if ((window as any).Paddle) {
+        (window as any).Paddle.Initialize({
           token: clientToken || 'test_dummy_client_token',
           environment: isSandbox ? 'sandbox' : 'production'
         });
@@ -65,8 +61,8 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
         throw new Error('Pricing configuration not loaded. Please refresh the page.');
       }
 
-      if (window.Paddle) {
-        window.Paddle.Checkout.open({
+      if ((window as any).Paddle) {
+        (window as any).Paddle.Checkout.open({
           items: [{ priceId: priceId, quantity: 1 }],
           settings: {
             displayMode: "overlay",
@@ -75,6 +71,20 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
           },
           customData: {
             workspace_id: workspaceId
+          },
+          eventCallback: (event: any) => {
+            if (event.name === 'checkout.items.updated' || event.name === 'checkout.updated') {
+              const items = event.data?.items || [];
+              const needsUpdate = items.some((item: any) => item.quantity !== 1);
+              if (needsUpdate && (window as any).Paddle) {
+                (window as any).Paddle.Checkout.updateItems(
+                  items.map((item: any) => ({
+                    priceId: item.priceId || item.price?.id,
+                    quantity: 1
+                  }))
+                );
+              }
+            }
           }
         });
       } else {

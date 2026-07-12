@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { PricingSection } from '../components/shared/PricingSection';
+import { PricingSectionNew } from '../components/shared/PricingSectionNew';
 
 export const PricingPage: React.FC = () => {
   return (
@@ -35,7 +35,7 @@ export const PricingPage: React.FC = () => {
         </section>
 
         {/* ─── Pricing Section Component ─── */}
-        <PricingSection />
+        <PricingSectionNew />
 
         {/* ─── Trust Bar ─── */}
         <section className="mt-12 sm:mt-16">

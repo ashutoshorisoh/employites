@@ -41,9 +41,9 @@ export const AdminDashboard: React.FC = () => {
     enterprise: ''
   });
   const [pricingDetails, setPricingDetails] = useState({
-    starter: { display_price: '' },
-    professional: { display_price: '' },
-    enterprise: { display_price: '' }
+    starter: { display_price: '', numeric_price: 0 },
+    professional: { display_price: '', numeric_price: 0 },
+    enterprise: { display_price: '', numeric_price: 0 }
   });
   const [isPricingLoading, setIsPricingLoading] = useState(true);
   const [editingTier, setEditingTier] = useState<string | null>(null);
@@ -86,16 +86,26 @@ export const AdminDashboard: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setPricingTiers({
-          starter: data.starter?.id || '',
-          professional: data.professional?.id || '',
-          enterprise: data.enterprise?.id || ''
-        });
-        setPricingDetails({
-          starter: { display_price: data.starter?.display_price || 'Not Configured' },
-          professional: { display_price: data.professional?.display_price || 'Not Configured' },
-          enterprise: { display_price: data.enterprise?.display_price || 'Not Configured' }
-        });
+        // data is now an array: [{ tier, id, numeric_price, display_price }, ...]
+        const tiersMap: Record<string, string> = { starter: '', professional: '', enterprise: '' };
+        const detailsMap: Record<string, { display_price: string; numeric_price: number }> = {
+          starter: { display_price: 'Not Configured', numeric_price: 0 },
+          professional: { display_price: 'Not Configured', numeric_price: 0 },
+          enterprise: { display_price: 'Not Configured', numeric_price: 0 }
+        };
+        if (Array.isArray(data)) {
+          data.forEach((item: { tier: string; id: string; numeric_price: number; display_price: string }) => {
+            if (item.tier in tiersMap) {
+              tiersMap[item.tier] = item.id || '';
+              detailsMap[item.tier] = {
+                display_price: item.display_price || 'Not Configured',
+                numeric_price: item.numeric_price || 0
+              };
+            }
+          });
+        }
+        setPricingTiers(tiersMap as typeof pricingTiers);
+        setPricingDetails(detailsMap as typeof pricingDetails);
       }
     } catch (err) {
       console.error('Failed to fetch pricing tiers', err);
@@ -499,8 +509,7 @@ export const AdminDashboard: React.FC = () => {
                     <button onClick={() => { 
                         setEditingTier('starter'); 
                         setPricingErrorMsg(''); 
-                        const match = pricingDetails.starter.display_price.match(/\d+/);
-                        if (match) setPricingTiers(prev => ({ ...prev, starter: match[0] }));
+                        setPricingTiers(prev => ({ ...prev, starter: String(pricingDetails.starter.numeric_price || '') }));
                       }} className="p-1 text-slate-400 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100 bg-slate-800 rounded">
                       <Edit2 className="w-3 h-3" />
                     </button>
@@ -543,8 +552,7 @@ export const AdminDashboard: React.FC = () => {
                     <button onClick={() => { 
                         setEditingTier('professional'); 
                         setPricingErrorMsg(''); 
-                        const match = pricingDetails.professional.display_price.match(/\d+/);
-                        if (match) setPricingTiers(prev => ({ ...prev, professional: match[0] }));
+                        setPricingTiers(prev => ({ ...prev, professional: String(pricingDetails.professional.numeric_price || '') }));
                       }} className="p-1 text-slate-400 hover:text-cyan-600 transition-colors opacity-0 group-hover:opacity-100 bg-slate-800 rounded">
                       <Edit2 className="w-3 h-3" />
                     </button>
@@ -587,8 +595,7 @@ export const AdminDashboard: React.FC = () => {
                     <button onClick={() => { 
                         setEditingTier('enterprise'); 
                         setPricingErrorMsg(''); 
-                        const match = pricingDetails.enterprise.display_price.match(/\d+/);
-                        if (match) setPricingTiers(prev => ({ ...prev, enterprise: match[0] }));
+                        setPricingTiers(prev => ({ ...prev, enterprise: String(pricingDetails.enterprise.numeric_price || '') }));
                       }} className="p-1 text-slate-400 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100 bg-slate-800 rounded">
                       <Edit2 className="w-3 h-3" />
                     </button>

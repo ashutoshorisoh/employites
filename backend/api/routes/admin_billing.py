@@ -6,7 +6,7 @@ import logging
 
 from backend.db.client import db
 from backend.api.routes.auth import require_admin
-from backend.api.routes.payments import TIER_PRICING, save_pricing, paddle_client
+from backend.api.routes.payments import TIER_PRICING, save_pricing, paddle_client, resolve_product_id
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -112,79 +112,110 @@ async def get_pricing_tiers():
     """
     Returns the current backend pricing authority mapping.
     Queries the live Paddle API to retrieve formatted display prices.
+    Returns a unified array: [{ tier, id, numeric_price, display_price }, ...]
     """
-    result = {}
+    result = []
     for tier, price_id in TIER_PRICING.items():
         if not price_id or price_id.startswith("mock_") or price_id == "dummy_price":
-            result[tier] = {"id": price_id, "display_price": "Not Configured / Invalid"}
+            result.append({"tier": tier, "id": price_id, "numeric_price": 0, "display_price": "Not Configured / Invalid"})
             continue
         try:
             price = paddle_client.prices.get(price_id)
             if not getattr(price, 'unit_price', None):
-                result[tier] = {"id": price_id, "display_price": "Invalid Price Object"}
+                result.append({"tier": tier, "id": price_id, "numeric_price": 0, "display_price": "Invalid Price Object"})
                 continue
-                
-            amount = float(price.unit_price.amount) / 100
-            currency = price.unit_price.currency_code
-            
+
+            raw_amount = price.unit_price.get('amount') if isinstance(price.unit_price, dict) else getattr(price.unit_price, 'amount', 0)
+            amount_cents = int(raw_amount)
+            numeric_price = amount_cents // 100
+            amount = amount_cents / 100
+
+            currency = price.unit_price.get('currency_code') if isinstance(price.unit_price, dict) else getattr(price.unit_price, 'currency_code', 'USD')
+
             # Handle billing cycle (Paddle v2 subscriptions vs one-time charges)
             if getattr(price, 'billing_cycle', None) and getattr(price.billing_cycle, 'interval', None):
                 interval = price.billing_cycle.interval
             else:
                 interval = "one-time"
-                
+
             currency_symbol = "$" if currency == "USD" else ("€" if currency == "EUR" else ("£" if currency == "GBP" else f"{currency} "))
-            
+
             if interval == "one-time":
                 display_price = f"{currency_symbol}{amount:,.2f}"
             else:
-                display_price = f"{currency_symbol}{amount:,.2f} / {interval}"
-                
-            result[tier] = {"id": price_id, "display_price": display_price}
+                display_price = f"{currency_symbol}{amount:,.0f} / {interval}" if amount == int(amount) else f"{currency_symbol}{amount:,.2f} / {interval}"
+
+            result.append({"tier": tier, "id": price_id, "numeric_price": numeric_price, "display_price": display_price})
         except Exception as e:
             logger.error(f"Failed to fetch price details for {tier} ({price_id}): {str(e)}")
-            result[tier] = {"id": price_id, "display_price": "API Error (Check ID)"}
-    
+            result.append({"tier": tier, "id": price_id, "numeric_price": 0, "display_price": "API Error (Check ID)"})
+
     return result
 
 @router.patch("/pricing-tiers")
 async def update_pricing_tiers(payload: PricingTiersUpdate, admin_user: dict = Depends(require_admin)):
     """
-    Refreshes the backend pricing authority mapping (TIER_PRICING).
-    If a numeric payload is provided, creates a new Price ID dynamically via Paddle SDK.
+    Updates the backend pricing authority mapping (TIER_PRICING).
+    If a numeric payload is provided, creates a NEW Price ID via Paddle SDK POST /prices
+    (Paddle prices are immutable — amounts cannot be PATCHed).
     """
-    # Validation and Creation
     tier_map = {
         "starter": payload.starter,
         "professional": payload.professional,
         "enterprise": payload.enterprise
     }
-    
+
+    product_id = resolve_product_id()
+
     for tier, value in tier_map.items():
         if value.startswith("pri_") or value == "dummy_price" or value.startswith("mock_"):
-            # Ensure it maps to 'Employites' if it's an existing Price ID
+            # Existing Price ID — validate it maps to the correct product
             try:
-                price = paddle_client.prices.get(value, include=["product"])
-                if not getattr(price, 'product', None) or price.product.name != "Employites":
+                price = paddle_client.prices.get(value)
+                if getattr(price, 'product', None) and hasattr(price.product, 'name') and price.product.name != "Employites":
                     raise ValueError(f"Price ID {value} does not map to 'Employites'.")
             except Exception as e:
                 logger.error(f"Price validation failed for {value}: {str(e)}")
                 raise HTTPException(status_code=400, detail=f"Invalid Price ID: {value}.")
             TIER_PRICING[tier] = value
         else:
-            # It's a new numeric value, dynamically generate a synchronized new price item
+            # Numeric value — create a brand new catalog price via Paddle POST /prices
             try:
-                # We simulate a Price Create operation under 'Employites' product
-                class FakePrice:
-                    def __init__(self, amount_val):
-                        self.unit_price = {"amount": str(int(float(amount_val) * 100)), "currency_code": "USD"}
-                        self.product_id = "pro_employites" # simulated product ID
-                
-                result = paddle_client.prices.create(FakePrice(value))
-                TIER_PRICING[tier] = result.id
+                amount_cents = str(int(float(value) * 100))
+
+                # Attempt to use the official SDK CreatePrice
+                try:
+                    from paddle_billing.Resources.Prices.Operations import CreatePrice
+                    from paddle_billing.Entities.Shared import Money, BillingCycle as PaddleBillingCycle, Duration
+
+                    new_price = paddle_client.prices.create(
+                        CreatePrice(
+                            product_id=product_id,
+                            description=f"{tier.capitalize()} Monthly Plan",
+                            billing_cycle=PaddleBillingCycle(
+                                interval=Duration.Month,
+                                frequency=1
+                            ),
+                            unit_price=Money(
+                                amount=amount_cents,
+                                currency_code="USD"
+                            )
+                        )
+                    )
+                except ImportError:
+                    # Fallback for mock/sandbox environments where SDK modules may differ
+                    class FakePricePayload:
+                        def __init__(self, pid, amt):
+                            self.product_id = pid
+                            self.description = f"{tier.capitalize()} Monthly Plan"
+                            self.unit_price = {"amount": amt, "currency_code": "USD"}
+                    new_price = paddle_client.prices.create(FakePricePayload(product_id, amount_cents))
+
+                TIER_PRICING[tier] = new_price.id
+                logger.info(f"Created new Paddle price for {tier}: {new_price.id} (amount: {amount_cents} cents)")
             except Exception as e:
-                logger.error(f"Failed to dynamically generate price for {tier}: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Failed to generate price for {tier}.")
-            
+                logger.error(f"Failed to create new price for {tier}: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to generate price for {tier}: {str(e)}")
+
     save_pricing()
     return {"message": "Pricing tiers mapping successfully synchronized with environment.", "tiers": TIER_PRICING}

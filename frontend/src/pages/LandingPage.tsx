@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Video, ArrowRight, CheckCircle, Sparkles, Terminal, Cpu, Kanban, Check, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { PricingSection } from '../components/shared/PricingSection';
+import { PricingSectionNew } from '../components/shared/PricingSectionNew';
 import { useAuth } from '../context/AuthContext';
 
 interface LandingPageProps {
@@ -204,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
             </p>
           </div>
 
-          <PricingSection onSuccess={onRecruiterStart} />
+          <PricingSectionNew onSuccess={onRecruiterStart} />
         </section>
 
       </div>
