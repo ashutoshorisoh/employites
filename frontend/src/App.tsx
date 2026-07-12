@@ -1,18 +1,19 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navigation } from './components/shared/Navigation';
 import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { AdminBillingDashboard } from './pages/AdminBillingDashboard';
 import { RecruiterDashboard } from './pages/RecruiterDashboard';
 import { CandidateInterview } from './pages/CandidateInterview';
 import { PricingPage } from './pages/PricingPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { RefundsPage } from './pages/RefundsPage';
+import { CandidateProfile } from './pages/CandidateProfile';
 
-import { LandingPage } from './pages/LandingPage';
-import { useNavigate } from 'react-router-dom';
+
 
 // Protected Route wrapper checking user presence and appropriate role
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ('admin' | 'recruiter' | 'candidate')[] }> = ({
@@ -44,6 +45,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ('admi
   return <>{children}</>;
 };
 
+import { LandingPage } from './pages/LandingPage';
+
 // Landing page wrapper inside Router context to access hooks
 const LandingPageWrapper: React.FC = () => {
   const navigate = useNavigate();
@@ -58,25 +61,45 @@ const LandingPageWrapper: React.FC = () => {
   };
 
   const handleCandidateStart = (token: string) => {
-    navigate(`/interview?token=${token}`);
+    navigate(`/candidate/dashboard?token=${token}`);
   };
 
   return <LandingPage onRecruiterStart={handleRecruiterStart} onCandidateStart={handleCandidateStart} />;
 };
 
+const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {!isAdminRoute && <Navigation />}
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
+  );
+};
+
 const AppContent: React.FC = () => {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1">
-          <Routes>
+      <MainLayout>
+        <Routes>
             <Route path="/" element={<LandingPageWrapper />} />
             <Route path="/login" element={<Login />} />
 
             <Route
               path="/admin"
               element={<AdminDashboard />}
+            />
+            <Route
+              path="/admin/billing"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminBillingDashboard />
+                </ProtectedRoute>
+              }
             />
 
             <Route
@@ -89,8 +112,17 @@ const AppContent: React.FC = () => {
             />
 
             <Route
-              path="/interview"
+              path="/candidate/dashboard"
               element={<CandidateInterview />}
+            />
+
+            <Route
+              path="/candidate/profile"
+              element={
+                <ProtectedRoute allowedRoles={['candidate']}>
+                  <CandidateProfile />
+                </ProtectedRoute>
+              }
             />
 
             <Route path="/pricing" element={<PricingPage />} />
@@ -100,8 +132,7 @@ const AppContent: React.FC = () => {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </main>
-      </div>
+      </MainLayout>
     </Router>
   );
 };

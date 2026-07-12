@@ -11,7 +11,7 @@ END$$;
 
 -- Users table (stores recruiters/clients and admin details)
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'recruiter', -- 'admin', 'recruiter', 'candidate'
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Jobs table
 CREATE TABLE IF NOT EXISTS jobs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     requirements TEXT,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 -- Candidates table
 CREATE TABLE IF NOT EXISTS candidates (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS candidates (
 
 -- Submissions table
 CREATE TABLE IF NOT EXISTS submissions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     job_id UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
     candidate_id UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
     video_url TEXT,
@@ -77,7 +77,46 @@ CREATE TABLE IF NOT EXISTS otps (
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+-- Subscriptions table for Paddle Billing
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    paddle_subscription_id VARCHAR(255) UNIQUE NOT NULL,
+    paddle_customer_id VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    tier_id VARCHAR(50) NOT NULL,
+    current_period_end TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_submissions_job_id ON submissions(job_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_candidate_id ON submissions(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_created_by ON jobs(created_by);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+
+-- ==========================================
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- ==========================================
+
+-- Enable Row Level Security on the subscriptions table
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- Allow service_role (backend API/webhooks) full bypass control
+DROP POLICY IF EXISTS "Service Role Full Access" ON subscriptions;
+CREATE POLICY "Service Role Full Access" 
+    ON subscriptions 
+    FOR ALL 
+    TO service_role 
+    USING (true)
+    WITH CHECK (true);
+
+-- Allow authenticated users to view only their own subscription data
+DROP POLICY IF EXISTS "Users can view own subscription" ON subscriptions;
+CREATE POLICY "Users can view own subscription" 
+    ON subscriptions 
+    FOR SELECT 
+    TO authenticated 
+    USING (user_id = auth.uid());
+

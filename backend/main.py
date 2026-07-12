@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from backend.core.config import settings
-from backend.api.routes import auth, jobs, submissions, webhooks, admin
+from backend.api.routes import auth, jobs, submissions, webhooks, admin, payments, admin_billing, candidates
 
 # Setup logger configuration
 logging.basicConfig(
@@ -52,6 +52,9 @@ app.include_router(jobs.router)
 app.include_router(submissions.router)
 app.include_router(webhooks.router)
 app.include_router(admin.router)
+app.include_router(payments.router)
+app.include_router(admin_billing.router, prefix="/v1/admin/billing")
+app.include_router(candidates.router, prefix="/v1/candidate")
 
 @app.get("/", tags=["Health Check"])
 async def root_health_check():

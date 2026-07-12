@@ -5,10 +5,11 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').r
 
 interface VideoRecorderProps {
   questionText: string;
+  isLastQuestion: boolean;
   onUploadComplete: (key: string) => void;
 }
 
-export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUploadComplete }) => {
+export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, isLastQuestion, onUploadComplete }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -278,7 +279,7 @@ export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUp
               onClick={startRecording}
               className="glow-btn px-5 py-2.5 bg-gradient-to-r from-accentPurple to-accentPink text-white font-semibold text-sm rounded-xl flex items-center gap-2 hover:shadow-lg transition-all"
             >
-              <Play className="w-4 h-4 fill-white" /> Start Capture
+              <Play className="w-4 h-4 fill-white" /> Start Interview
             </button>
           )}
 
@@ -294,16 +295,10 @@ export const VideoRecorder: React.FC<VideoRecorderProps> = ({ questionText, onUp
           {status === 'stopped' && (
             <>
               <button 
-                onClick={retakeVideo}
-                className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-gray-200 text-sm font-semibold rounded-xl flex items-center gap-2 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" /> Retake
-              </button>
-              <button 
                 onClick={uploadVideo}
                 className="glow-btn px-5 py-2.5 bg-gradient-to-r from-accentCyan to-accentPurple text-white font-semibold text-sm rounded-xl flex items-center gap-2 transition-all"
               >
-                <UploadCloud className="w-4 h-4" /> Upload Interview
+                <UploadCloud className="w-4 h-4" /> {isLastQuestion ? "Submit Interview" : "Next Question"}
               </button>
             </>
           )}

@@ -227,12 +227,14 @@ export const CandidateInterview: React.FC = () => {
       setTimeout(() => {
         setCurrentQuestionIndex((prev) => prev + 1);
       }, 1200);
+    } else {
+      handleFinalizeSession(updated);
     }
   };
 
   // Submit complete interview session
-  const handleFinalizeSession = async () => {
-    if (completedUploads.length === 0) return;
+  const handleFinalizeSession = async (finalUploads: string[]) => {
+    if (finalUploads.length === 0) return;
     setIsFinishing(true);
     setErrorMsg('');
 
@@ -533,26 +535,34 @@ export const CandidateInterview: React.FC = () => {
     );
   }
 
-  // 2. Completed interview state
-  if (isDone) {
+  // 2. Completed interview state (Submission Modal States)
+  if (isFinishing || isDone) {
     return (
-      <div className="min-h-[75vh] flex items-center justify-center p-6">
-        <div className="w-full max-w-md glass-panel rounded-2xl p-8 text-center space-y-5 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-500 to-accentCyan"></div>
-          <CheckCircle2 className="w-16 h-16 text-emerald-600 mx-auto" />
-          <h2 className="text-xl font-extrabold text-emerald-800">Interview Submitted Successfully!</h2>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            Thank you for completing the screening. Your verbal answers, telemetry cost controls, and code explanations are being processed.
-          </p>
-          <div className="pt-4 border-t border-zinc-900">
-            <button
-              onClick={resetInterviewForm}
-              className="glow-btn px-6 py-2.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl transition-all"
-            >
-              Go to Portal Dashboard
-            </button>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-zinc-950/90 backdrop-blur-md">
+        {isFinishing ? (
+          <div className="w-full max-w-md glass-panel rounded-2xl p-10 text-center space-y-6">
+            <Loader2 className="w-16 h-16 text-accentCyan animate-spin mx-auto mb-4" />
+            <h2 className="text-xl font-extrabold text-zinc-100">Submitting interview...</h2>
+            <p className="text-sm text-zinc-400">Please do not close your browser.</p>
           </div>
-        </div>
+        ) : (
+          <div className="w-full max-w-md glass-panel rounded-2xl p-10 text-center space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-500 to-accentCyan"></div>
+            <CheckCircle2 className="w-20 h-20 text-emerald-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-black text-emerald-400">Interview Completed!</h2>
+            <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+              We will let you know the results once the job closing date arrives or if your status changes.
+            </p>
+            <div className="pt-6 border-t border-zinc-900/60 mt-4">
+              <button
+                onClick={resetInterviewForm}
+                className="glow-btn px-8 py-3 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-sm font-bold rounded-xl transition-all"
+              >
+                Go to Portal Dashboard
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -564,8 +574,6 @@ export const CandidateInterview: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-900 pb-5 mb-8 gap-4">
           <div>
             <span className="text-[10px] font-bold text-accentPurple tracking-widest uppercase block">Assessment Pipeline</span>
-            <h1 className="text-2xl font-extrabold text-zinc-100 mt-2 tracking-tight">{previewJob?.title || 'Job Assessment'}</h1>
-            <p className="text-xs text-zinc-400 mt-1">{previewJob?.description}</p>
           </div>
 
           <button
@@ -642,33 +650,11 @@ export const CandidateInterview: React.FC = () => {
             <VideoRecorder
               key={currentQuestionIndex}
               questionText={questions[currentQuestionIndex]}
+              isLastQuestion={currentQuestionIndex === questions.length - 1}
               onUploadComplete={handleUploadComplete}
             />
 
-            <div className="flex justify-between items-center bg-zinc-950/80 border border-zinc-900 rounded-xl p-4">
-              <div className="text-xs text-zinc-200">
-                {completedUploads.length} of {questions.length} questions completed
-              </div>
 
-              <button
-                onClick={handleFinalizeSession}
-                disabled={!isAllAnswered || isFinishing}
-                className={`glow-btn px-6 py-3 font-semibold text-xs rounded-xl flex items-center gap-2 transition-all ${isAllAnswered
-                  ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg hover:opacity-95'
-                  : 'bg-zinc-800 text-zinc-200 border border-zinc-700 cursor-not-allowed'
-                  }`}
-              >
-                {isFinishing ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving Responses...
-                  </>
-                ) : (
-                  <>
-                    Finalize & Submit Session <Check className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -775,12 +761,7 @@ export const CandidateInterview: React.FC = () => {
           </div>
 
           <div className="flex gap-3">
-            <button
-              onClick={logout}
-              className="glow-btn px-4.5 py-2.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl flex items-center gap-2"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Sign Out
-            </button>
+
             <button
               onClick={fetchCandidateApps}
               className="p-2.5 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-accentPurple rounded-xl transition-all"

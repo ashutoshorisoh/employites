@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Video, ArrowRight, CheckCircle, Sparkles, Terminal, Cpu, Kanban, Check, Mail } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PricingSection } from '../components/shared/PricingSection';
+import { useAuth } from '../context/AuthContext';
 
 interface LandingPageProps {
   onRecruiterStart: () => void;
@@ -11,6 +12,14 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCandidateStart }) => {
   const [tokenInput, setTokenInput] = useState('');
   const [candidateError, setCandidateError] = useState('');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (user?.role === 'candidate') {
+      navigate('/candidate/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleCandidateSubmit = (e: React.FormEvent) => {
     e.preventDefault();

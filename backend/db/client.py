@@ -37,6 +37,7 @@ class LocalJSONDatabaseFallback:
         self.jobs = PersistentDict(self.save)
         self.candidates = PersistentDict(self.save)
         self.submissions = PersistentDict(self.save)
+        self.subscriptions = PersistentDict(self.save)
         self.otp_store = {}
         self.load()
 
@@ -101,6 +102,20 @@ class LocalJSONDatabaseFallback:
                     "created_at": datetime.fromisoformat(v["created_at"]) if "created_at" in v else datetime.now(timezone.utc),
                     "updated_at": datetime.fromisoformat(v["updated_at"]) if "updated_at" in v else datetime.now(timezone.utc)
                 }
+            # Load subscriptions
+            for k, v in data.get("subscriptions", {}).items():
+                subid = uuid.UUID(k)
+                self.subscriptions[subid] = {
+                    "id": subid,
+                    "user_id": uuid.UUID(v["user_id"]),
+                    "paddle_subscription_id": v["paddle_subscription_id"],
+                    "paddle_customer_id": v["paddle_customer_id"],
+                    "status": v["status"],
+                    "tier_id": v["tier_id"],
+                    "current_period_end": datetime.fromisoformat(v["current_period_end"]) if v.get("current_period_end") else None,
+                    "created_at": datetime.fromisoformat(v["created_at"]) if "created_at" in v else datetime.now(timezone.utc),
+                    "updated_at": datetime.fromisoformat(v["updated_at"]) if "updated_at" in v else datetime.now(timezone.utc)
+                }
         except Exception:
             self._seed()
 
@@ -155,6 +170,19 @@ class LocalJSONDatabaseFallback:
                         "created_at": v["created_at"].isoformat() if isinstance(v.get("created_at"), datetime) else str(v.get("created_at")),
                         "updated_at": v["updated_at"].isoformat() if isinstance(v.get("updated_at"), datetime) else str(v.get("updated_at"))
                     } for k, v in self.submissions.items()
+                },
+                "subscriptions": {
+                    str(k): {
+                        "id": str(v["id"]),
+                        "user_id": str(v["user_id"]),
+                        "paddle_subscription_id": v["paddle_subscription_id"],
+                        "paddle_customer_id": v["paddle_customer_id"],
+                        "status": v["status"],
+                        "tier_id": v["tier_id"],
+                        "current_period_end": v["current_period_end"].isoformat() if isinstance(v.get("current_period_end"), datetime) else (str(v.get("current_period_end")) if v.get("current_period_end") else None),
+                        "created_at": v["created_at"].isoformat() if isinstance(v.get("created_at"), datetime) else str(v.get("created_at")),
+                        "updated_at": v["updated_at"].isoformat() if isinstance(v.get("updated_at"), datetime) else str(v.get("updated_at"))
+                    } for k, v in self.subscriptions.items()
                 }
             }
             with open(self._file_path, "w", encoding="utf-8") as f:
@@ -319,10 +347,11 @@ class SupabasePostgresDatabase:
         self.jobs = TableProxy("jobs", self.get_connection)
         self.candidates = TableProxy("candidates", self.get_connection)
         self.submissions = TableProxy("submissions", self.get_connection)
+        self.subscriptions = TableProxy("subscriptions", self.get_connection)
         self.otp_store = TableProxy("otps", self.get_connection)
 
-        # Bypass running schema migrations over the transaction pooler on every startup to prevent connection deadlocks.
-        # self._initialize_schema()
+        # Run schema migrations on startup to build schemas automatically.
+        self._initialize_schema()
 
     def get_connection(self):
         return psycopg2.connect(self.db_url)

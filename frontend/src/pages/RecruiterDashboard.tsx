@@ -535,9 +535,9 @@ export const RecruiterDashboard: React.FC = () => {
           </button>
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <h2 className="text-lg font-extrabold text-zinc-100">{selectedJob.title}</h2>
-            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${selectedJob.isActive
-              ? 'bg-green text-white border-green'
-              : 'bg-red text-white border-red'
+            <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider text-white shadow-sm ${selectedJob.isActive
+              ? 'bg-emerald-600'
+              : 'bg-rose-600'
               }`}>
               {selectedJob.isActive ? 'Active' : 'Closed'}
             </span>
@@ -808,9 +808,9 @@ export const RecruiterDashboard: React.FC = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-extrabold text-md text-zinc-100">{job.title}</h3>
-                          <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase tracking-wider ${job.isActive
-                            ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
-                            : 'bg-zinc-900 text-zinc-200 border-zinc-800'
+                          <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider text-white shadow-sm ${job.isActive
+                            ? 'bg-emerald-600'
+                            : 'bg-rose-600'
                             }`}>
                             {job.isActive ? 'Active' : 'Closed'}
                           </span>

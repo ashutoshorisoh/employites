@@ -86,11 +86,11 @@ export const Navigation: React.FC = () => {
               {/* Candidate Navigation */}
               {isCandidate && (
                 <button
-                  onClick={() => navigate('/interview')}
-                  className={`text-xs font-bold tracking-wider uppercase transition-colors ${isActive('/interview') ? 'text-accentPurple' : 'text-zinc-400 hover:text-zinc-100'
+                  onClick={() => navigate('/candidate/dashboard')}
+                  className={`text-xs font-bold tracking-wider uppercase transition-colors ${isActive('/candidate/dashboard') ? 'text-accentPurple' : 'text-zinc-400 hover:text-zinc-100'
                     }`}
                 >
-                  Interview Portal
+                  My Applications
                 </button>
               )}
 
@@ -211,10 +211,10 @@ export const Navigation: React.FC = () => {
               {/* Candidate Links */}
               {isCandidate && (
                 <button
-                  onClick={() => { navigate('/interview'); setMobileMenuOpen(false); }}
+                  onClick={() => { navigate('/candidate/dashboard'); setMobileMenuOpen(false); }}
                   className="w-full text-left py-2.5 px-3 hover:bg-zinc-900 rounded-lg text-xs font-bold text-zinc-100"
                 >
-                  Interview Portal
+                  My Applications
                 </button>
               )}
             </>
