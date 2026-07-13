@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, CreditCard } from 'lucide-react';
 
+import { toast } from 'react-toastify';
+
 interface CheckoutButtonProps {
   priceId: string;
   workspaceId: string;
@@ -92,7 +94,7 @@ export const CheckoutButton: React.FC<CheckoutButtonProps> = ({
       }
     } catch (err: any) {
       console.error('Checkout failed:', err);
-      alert(err.message || 'Unable to open checkout gateway. Please contact billing support.');
+      toast.error(err.message || 'Unable to open checkout gateway. Please contact billing support.');
     } finally {
       setIsLoading(false);
     }

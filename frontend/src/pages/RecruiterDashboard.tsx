@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { KanbanBoard, CandidateCard } from '../components/ui/KanbanBoard';
+import { toast } from 'react-toastify';
 import { MetricCard } from '../components/ui/MetricCard';
 import {
   Users, Video, ShieldAlert, Award, Star, Search, PlusCircle,
@@ -63,6 +64,21 @@ export const RecruiterDashboard: React.FC = () => {
   const [isCreatingJob, setIsCreatingJob] = useState(false);
   const [createdJobToken, setCreatedJobToken] = useState<string | null>(null);
 
+  // Confirmation Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    confirmButtonClass?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   // Job Editor form states
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [editJobTitle, setEditJobTitle] = useState('');
@@ -125,7 +141,7 @@ export const RecruiterDashboard: React.FC = () => {
             resumeRequested: !!s.resume_requested,
             candidateResumeUrl: s.candidate_resume_url || '',
             telemetryAlerts: alerts,
-            status: s.status,
+            status: s.status === 'Failed' ? 'Rejected' : (s.status === 'Completed' && s.resume_requested) ? 'Shortlisted' : s.status,
             summary: summary,
             videoUrl: '',
             transcript: transcript,
@@ -186,7 +202,7 @@ export const RecruiterDashboard: React.FC = () => {
                 resumeRequested: !!s.resume_requested,
                 candidateResumeUrl: s.candidate_resume_url || '',
                 telemetryAlerts: alerts,
-                status: s.status,
+                status: s.status === 'Failed' ? 'Rejected' : (s.status === 'Completed' && s.resume_requested) ? 'Shortlisted' : s.status,
                 summary: summary,
                 videoUrl: '',
                 transcript: transcript,
@@ -220,40 +236,55 @@ export const RecruiterDashboard: React.FC = () => {
   }, [allCandidates]);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    setAllCandidates(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    setAllCandidates(prev => prev.map(c => c.id === id ? { 
+      ...c, 
+      status: newStatus,
+      resumeRequested: newStatus === 'Shortlisted' ? true : c.resumeRequested
+    } : c));
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
     try {
-      const dbStatus = newStatus === 'Reviewing' ? 'Completed' : newStatus === 'Rejected' ? 'Failed' : 'Pending';
       await fetch(`${API_BASE_URL}/submissions/${id}`, {
         method: 'PUT',
         headers: headers,
         credentials: 'include',
-        body: JSON.stringify({ status: dbStatus })
+        body: JSON.stringify({ status: newStatus })
       });
+      toast.success(`Candidate status updated to ${newStatus}.`);
     } catch (err) {
       console.error('Failed to update candidate status on server:', err);
+      toast.error('Failed to save status update to database.');
     }
   };
 
+  const triggerCloseJob = (jobId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Close Job Listing',
+      message: 'Are you sure you want to close this job listing? This will lock candidate submissions, rank the leaderboard, and email the top candidate shortlist to your profile email.',
+      confirmText: 'Close Job',
+      confirmButtonClass: 'bg-rose-600 hover:bg-rose-750 font-bold',
+      onConfirm: () => handleCloseJob(jobId)
+    });
+  };
+
   const handleCloseJob = async (jobId: string) => {
-    if (!window.confirm("Are you sure you want to close this job listing? This will lock candidate submissions, rank the leaderboard, and email the top candidate shortlist to your profile email.")) return;
     try {
       const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/close`, {
         method: 'POST',
         credentials: 'include'
       });
       if (res.ok) {
-        alert("Job closed successfully! Top candidate reports have been emailed.");
+        toast.success("Job closed successfully! Top candidate reports have been emailed.");
         fetchDashboardData();
       } else {
         const data = await res.json();
-        alert(`Failed to close job: ${data.detail || 'Server error'}`);
+        toast.error(`Failed to close job: ${data.detail || 'Server error'}`);
       }
     } catch (e) {
       console.error(e);
-      alert("Failed to close job posting.");
+      toast.error("Failed to close job posting.");
     }
   };
 
@@ -264,15 +295,15 @@ export const RecruiterDashboard: React.FC = () => {
         credentials: 'include'
       });
       if (res.ok) {
-        alert("Resume request notification email successfully sent to the candidate.");
+        toast.success("Resume request notification email successfully sent to the candidate.");
         fetchDashboardData();
       } else {
         const data = await res.json();
-        alert(`Failed to request resume: ${data.detail || 'Server error'}`);
+        toast.error(`Failed to request resume: ${data.detail || 'Server error'}`);
       }
     } catch (e) {
       console.error(e);
-      alert("Failed to request resume.");
+      toast.error("Failed to request resume.");
     }
   };
 
@@ -285,11 +316,11 @@ export const RecruiterDashboard: React.FC = () => {
         const data = await res.json();
         window.open(data.url, '_blank');
       } else {
-        alert("Failed to retrieve resume download link.");
+        toast.error("Failed to retrieve resume download link.");
       }
     } catch (e) {
       console.error(e);
-      alert("Connection error fetching resume download URL.");
+      toast.error("Connection error fetching resume download URL.");
     }
   };
 
@@ -404,15 +435,22 @@ export const RecruiterDashboard: React.FC = () => {
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, isActive: updated.is_active } : j));
     } catch (err) {
       console.error('Error toggling job status:', err);
-      alert('Failed to update job status.');
+      toast.error('Failed to update job status.');
     }
   };
 
-  const handleDeleteJob = async (jobId: string) => {
-    if (!window.confirm('Are you sure you want to delete this job listing? Candidates will no longer be able to access it.')) {
-      return;
-    }
+  const triggerDeleteJob = (jobId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Job Listing',
+      message: 'Are you sure you want to delete this job listing? Candidates will no longer be able to access it.',
+      confirmText: 'Delete Job',
+      confirmButtonClass: 'bg-rose-600 hover:bg-rose-750 font-bold',
+      onConfirm: () => handleDeleteJob(jobId)
+    });
+  };
 
+  const handleDeleteJob = async (jobId: string) => {
     const headers: Record<string, string> = {};
 
     try {
@@ -431,10 +469,10 @@ export const RecruiterDashboard: React.FC = () => {
       if (selectedJobId === jobId) {
         setSelectedJobId(null);
       }
-      alert('Job listing deleted successfully.');
+      toast.success('Job listing deleted successfully.');
     } catch (err) {
       console.error('Error deleting job:', err);
-      alert('Failed to delete job listing.');
+      toast.error('Failed to delete job listing.');
     }
   };
 
@@ -479,10 +517,10 @@ export const RecruiterDashboard: React.FC = () => {
       } : j));
 
       setEditingJob(null);
-      alert('Job details updated successfully.');
+      toast.success('Job details updated successfully.');
     } catch (err) {
       console.error('Error updating job details:', err);
-      alert('Failed to update job details.');
+      toast.error('Failed to update job details.');
     } finally {
       setIsUpdatingJob(false);
     }
@@ -561,7 +599,7 @@ export const RecruiterDashboard: React.FC = () => {
             {/* Close Job Posting Trigger Button */}
             {selectedJob.isActive && (
               <button
-                onClick={() => handleCloseJob(selectedJob.id)}
+                onClick={() => triggerCloseJob(selectedJob.id)}
                 className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-[10px] font-extrabold text-rose-700 hover:text-rose-800 rounded-lg transition-all"
               >
                 Close Job Posting
@@ -598,6 +636,35 @@ export const RecruiterDashboard: React.FC = () => {
           {/* Candidate Board sub-tab */}
           {jobSubTab === 'candidates' && (
             <>
+              {(() => {
+                const sorted = [...jobCandidates]
+                  .filter(c => !c.cheatingFlagged && (c.status === 'Completed' || c.status === 'Shortlisted'))
+                  .sort((a, b) => {
+                    const scoreA = (a.scoreTechnical + a.scoreCommunication) / 2;
+                    const scoreB = (b.scoreTechnical + b.scoreCommunication) / 2;
+                    return scoreB - scoreA;
+                  });
+                const topCandidate = sorted[0];
+                if (topCandidate) {
+                  const avgScore = (topCandidate.scoreTechnical + topCandidate.scoreCommunication) / 2;
+                  if (avgScore < 70) {
+                    return (
+                      <div className="flex items-start gap-3 p-4 bg-rose-950/20 border border-rose-500/25 rounded-2xl text-xs text-rose-300 font-bold mb-4 shadow-sm">
+                        <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-extrabold text-rose-200">Candidate Pool Warning</p>
+                          <p className="font-semibold text-rose-450 mt-1 leading-relaxed text-[11px]">
+                            Notice: The top candidate in this pool scored below 7/10 ({avgScore.toFixed(1)}%). Overall, the candidates did not perform well.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+                return null;
+              })()
+              }
+
               {jobCandidates.length > 0 ? (
                 <div className="glass-panel rounded-2xl overflow-hidden border border-zinc-900 bg-zinc-950/20">
                   <div className="overflow-x-auto">
@@ -656,7 +723,7 @@ export const RecruiterDashboard: React.FC = () => {
                                   {appliedTime}
                                 </td>
                                 <td className="py-4 px-6 text-center">
-                                  {c.status !== 'Completed' ? (
+                                  {(c.status !== 'Completed' && c.status !== 'Shortlisted') ? (
                                     <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-extrabold uppercase border ${c.status === 'Failed'
                                       ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
                                       : 'bg-zinc-950 text-zinc-200 border-zinc-900 animate-pulse'
@@ -686,7 +753,7 @@ export const RecruiterDashboard: React.FC = () => {
                                         {c.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}
                                       </div>
                                     </div>
-                                  ) : c.status === 'Completed' ? (
+                                  ) : (c.status === 'Completed' || c.status === 'Shortlisted') ? (
                                     <div className="inline-flex items-center gap-1.5 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-250 px-2 py-0.5 rounded uppercase">
                                       <CheckCircle className="w-3.5 h-3.5" /> Verified
                                     </div>
@@ -703,7 +770,7 @@ export const RecruiterDashboard: React.FC = () => {
                                   </button>
 
                                   {/* Ask Resume Trigger */}
-                                  {c.status === 'Completed' && (
+                                  {(c.status === 'Completed' || c.status === 'Shortlisted') && (
                                     <>
                                       {c.candidateResumeUrl ? (
                                         <button
@@ -713,8 +780,8 @@ export const RecruiterDashboard: React.FC = () => {
                                           <FileText className="w-3 h-3" /> Resume
                                         </button>
                                       ) : c.resumeRequested ? (
-                                        <span className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-900 text-[10px] font-bold text-zinc-200 rounded-lg">
-                                          Requested
+                                        <span className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-900 text-[10px] font-bold text-orange-400 rounded-lg">
+                                          resume asked
                                         </span>
                                       ) : !selectedJob.isActive ? (
                                         <button
@@ -778,14 +845,14 @@ export const RecruiterDashboard: React.FC = () => {
       {!selectedJobId && (
         <>
           <div className="flex justify-end gap-3 mb-6">
-            <button
+            {/* <button
               onClick={() => {
                 window.location.href = '/pricing';
               }}
               className="flex items-center gap-1.5 px-4 py-2.5 bg-zinc-950 border border-zinc-900 hover:border-zinc-800 text-xs font-bold text-zinc-300 hover:text-accentPurple rounded-xl transition-all"
             >
               <CreditCard className="w-3.5 h-3.5" /> Buy Plan
-            </button>
+            </button> */}
             <button
               onClick={() => {
                 setCreatedJobToken(null);
@@ -870,7 +937,7 @@ export const RecruiterDashboard: React.FC = () => {
                         )}
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id); }}
+                        onClick={(e) => { e.stopPropagation(); triggerDeleteJob(job.id); }}
                         className="flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 bg-rose-950/10 border border-rose-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-3 h-3 text-rose-500" /> Delete
@@ -890,7 +957,7 @@ export const RecruiterDashboard: React.FC = () => {
                           e.stopPropagation();
                           const inviteLink = `${window.location.origin}/interview?token=${job.token}`;
                           navigator.clipboard.writeText(inviteLink);
-                          alert(`Job Link copied to clipboard!`);
+                          toast.success(`Job Link copied to clipboard!`);
                         }}
                         className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 hover:text-zinc-100 flex-shrink-0"
                       >
@@ -1062,7 +1129,7 @@ export const RecruiterDashboard: React.FC = () => {
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(createdJobToken);
-                      alert('Token copied!');
+                      toast.success('Token copied!');
                     }}
                     className="text-xs text-gray-400 hover:text-accentPurple"
                   >
@@ -1249,6 +1316,50 @@ export const RecruiterDashboard: React.FC = () => {
               )}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Reusable Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/85 backdrop-blur-xs" 
+            onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+          ></div>
+          <div className="relative glass-panel rounded-2xl w-full max-w-md p-6 overflow-hidden shadow-2xl z-10 space-y-5">
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
+            
+            <div className="flex items-center gap-3 border-b border-zinc-900 pb-3">
+              <AlertTriangle className="w-6 h-6 text-amber-500" />
+              <h3 className="font-extrabold text-md text-zinc-100">{confirmModal.title}</h3>
+            </div>
+
+            <p className="text-xs text-zinc-300 leading-relaxed font-semibold">
+              {confirmModal.message}
+            </p>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 border border-zinc-800 hover:bg-zinc-900/60 rounded-xl text-zinc-400 hover:text-zinc-200 text-xs font-bold transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                }}
+                className={`px-4.5 py-2 text-white text-xs font-bold rounded-xl transition-all hover:scale-[1.01] ${
+                  confirmModal.confirmButtonClass || 'bg-gradient-to-r from-accentPurple to-accentCyan'
+                }`}
+              >
+                {confirmModal.confirmText || 'Confirm'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

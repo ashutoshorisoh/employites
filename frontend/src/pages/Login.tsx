@@ -283,6 +283,18 @@ export const Login: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Candidate Portal Route Redirect */}
+            <div className="mt-4 pt-4 border-t border-zinc-900/60 text-center">
+              <span className="text-[10px] text-zinc-400 block mb-1 font-semibold">Are you a candidate?</span>
+              <button
+                type="button"
+                onClick={() => navigate('/candidate/dashboard')}
+                className="text-xs text-accentCyan hover:text-white font-extrabold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 mx-auto"
+              >
+                Go to Candidate Portal &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </div>

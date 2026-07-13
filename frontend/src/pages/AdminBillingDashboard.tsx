@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Shield, Users, CreditCard, Gift, Loader2, RefreshCw } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 interface Subscriber {
   id: string;
@@ -77,7 +78,7 @@ export const AdminBillingDashboard: React.FC = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      alert("Pricing tiers synchronized with server.");
+      toast.success("Pricing tiers synchronized with server.");
     } catch (err) {
       console.error(err);
     }

@@ -5,6 +5,7 @@ import {
   ClipboardList, CheckCircle2, Shield, Eye, EyeOff, ChevronRight, Sparkles, Check, Loader2, User, Mail, Video, Lock, FileText, UploadCloud, AlertCircle, LogOut, Download
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, "");
 
@@ -41,11 +42,7 @@ export const CandidateInterview: React.FC = () => {
   // Active Interview states
   const [activeInterviewStarted, setActiveInterviewStarted] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<string[]>([
-    'Explain React Concurrent mode rendering and how it benefits UI responsiveness.',
-    'Describe your design system architectural pattern and how you scale Tailwind CSS configuration across projects.',
-    'How do you manage state transitions and coordinate media devices when building interactive browser components?'
-  ]);
+  const [questions, setQuestions] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [completedUploads, setCompletedUploads] = useState<string[]>([]);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -68,11 +65,6 @@ export const CandidateInterview: React.FC = () => {
       if (res.ok) {
         const job = await res.json();
         setPreviewJob(job);
-        if (Array.isArray(job.questions) && job.questions.length > 0) {
-          setQuestions(job.questions);
-        } else if (job.requirements) {
-          setQuestions([job.requirements]);
-        }
       } else {
         setPreviewJob(null);
         setJdError('Invalid invite token. Please verify code.');
@@ -210,10 +202,15 @@ export const CandidateInterview: React.FC = () => {
     setIsJdLoading(false);
     if (res.success) {
       setJobId(previewJob.id);
-      setQuestions(previewJob.questions || [previewJob.requirements]);
+      const fetchedQuestions = Array.isArray(previewJob.questions) && previewJob.questions.length > 0
+        ? previewJob.questions
+        : previewJob.requirements
+          ? [previewJob.requirements]
+          : [];
+      setQuestions(fetchedQuestions);
       setActiveInterviewStarted(true);
     } else {
-      alert(res.message || 'Checkin failed.');
+      toast.error(res.message || 'Checkin failed.');
     }
   };
 
@@ -312,11 +309,11 @@ export const CandidateInterview: React.FC = () => {
 
       if (!saveRes.ok) throw new Error('Failed linking resume to profile.');
 
-      alert('Resume uploaded successfully! Recruiter has been notified.');
+      toast.success('Resume uploaded successfully! Recruiter has been notified.');
       fetchCandidateApps();
     } catch (err: any) {
       console.error('Resume upload failed:', err);
-      alert(err.message || 'Failed to upload resume file.');
+      toast.error(err.message || 'Failed to upload resume file.');
     } finally {
       setIsUploadingResume(false);
       setUploadingSubId(null);
@@ -592,40 +589,20 @@ export const CandidateInterview: React.FC = () => {
           <div className="space-y-6">
             <div className="glass-panel rounded-2xl p-5 space-y-4">
               <h3 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 uppercase tracking-wider">
-                <ClipboardList className="w-4 h-4 text-accentPurple" /> Assessment Prompts
+                <ClipboardList className="w-4 h-4 text-accentPurple" /> Active Assessment Prompt
               </h3>
 
               <div className="space-y-2">
-                {questions.map((q, idx) => {
-                  const isCompleted = completedUploads.length > idx;
-                  const isActive = currentQuestionIndex === idx;
-
-                  return (
-                    <button
-                      key={idx}
-                      disabled={idx > completedUploads.length}
-                      onClick={() => setCurrentQuestionIndex(idx)}
-                      className={`w-full text-left p-3.5 rounded-xl border text-xs font-medium transition-all flex items-start justify-between gap-3 ${isActive
-                        ? 'bg-gradient-to-r from-accentPurple/10 to-accentCyan/5 border-accentPurple/30 text-zinc-100 font-bold'
-                        : isCompleted
-                          ? 'bg-zinc-950/40 border-zinc-900 text-zinc-400'
-                          : 'bg-zinc-950/20 border-zinc-900/40 text-zinc-650 cursor-not-allowed'
-                        }`}
-                    >
-                      <div className="space-y-1">
-                        <span className="text-[10px] uppercase font-bold text-zinc-200 block">Question {idx + 1}</span>
-                        <p className="line-clamp-2 pr-1">
-                          {idx <= completedUploads.length ? q : "Locked Question"}
-                        </p>
-                      </div>
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-zinc-300 flex-shrink-0 mt-0.5" />
-                      )}
-                    </button>
-                  );
-                })}
+                {questions.length > 0 && currentQuestionIndex < questions.length && (
+                  <div className="w-full text-left p-4.5 rounded-xl border border-accentPurple/30 bg-gradient-to-r from-accentPurple/10 to-accentCyan/5 text-zinc-100 font-medium">
+                    <span className="text-[10px] uppercase font-extrabold text-accentCyan block mb-2 tracking-widest">
+                      Question {currentQuestionIndex + 1} of {questions.length}
+                    </span>
+                    <p className="leading-relaxed text-sm font-semibold">
+                      {questions[currentQuestionIndex]}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -693,19 +670,7 @@ export const CandidateInterview: React.FC = () => {
               </p>
             </div>
 
-            <div>
-              <h3 className="text-xs md:text-sm font-extrabold text-zinc-400 uppercase tracking-wider mb-3">Configure Screening Prompts ({questions.length})</h3>
-              <div className="space-y-3">
-                {questions.map((q, idx) => (
-                  <div key={idx} className="flex gap-4 text-sm bg-zinc-900/10 border border-zinc-900/40 p-4.5 rounded-2xl text-zinc-300 items-center">
-                    <span className="w-6 h-6 rounded-lg bg-accentPurple/10 border border-accentPurple/20 flex items-center justify-center font-bold text-accentPurple text-xs flex-shrink-0">
-                      {idx + 1}
-                    </span>
-                    <p className="leading-relaxed">{q}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+
 
             {/* Action Bar */}
             <div className="pt-8 border-t border-zinc-900/60 flex flex-wrap items-center justify-between gap-4">
@@ -762,12 +727,12 @@ export const CandidateInterview: React.FC = () => {
 
           <div className="flex gap-3">
 
-            <button
+            {/* <button
               onClick={fetchCandidateApps}
               className="p-2.5 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-accentPurple rounded-xl transition-all"
             >
               <LogOut className="w-4 h-4" />
-            </button>
+            </button> */}
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Check, Sparkles, Zap, Building2, ArrowRight, Star, Loader2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
 import { initPaddle, getPaddlePrices, STARTER_PRICE_ID, PROFESSIONAL_PRICE_ID, ENTERPRISE_PRICE_ID, ANNUAL_STARTER_PRICE_ID, ANNUAL_PROFESSIONAL_PRICE_ID, ANNUAL_ENTERPRISE_PRICE_ID } from '../../services/getPricing';
 
 interface PricingSectionProps {
@@ -190,7 +191,7 @@ export const PricingSectionNew: React.FC<PricingSectionProps> = ({ onSuccess }) 
               console.log("Payment successful on the frontend!", event.data);
               
               // Show an immediate visual success message to the user
-              alert("Thank you! Processing your order now...");
+              toast.success("Thank you! Processing your order now...");
               
               // Send a quick ping to backend to refresh/sync the user subscription state
               try {
@@ -213,13 +214,13 @@ export const PricingSectionNew: React.FC<PricingSectionProps> = ({ onSuccess }) 
             // --- CASE 3: Checkout Closed / Abandoned ---
             if (event.name === 'checkout.closed') {
               console.log("The user closed the checkout window without paying.");
-              alert("Checkout cancelled. Let us know if you have any questions!");
+              toast.info("Checkout cancelled. Let us know if you have any questions!");
             }
 
             // --- CASE 4: An Error Occurred Inside Checkout ---
             if (event.name === 'checkout.error') {
               console.error("Checkout experienced an error:", event.data);
-              alert("Something went wrong with the checkout. Please try again.");
+              toast.error("Something went wrong with the checkout. Please try again.");
             }
           }
         });

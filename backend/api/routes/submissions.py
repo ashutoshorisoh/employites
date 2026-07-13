@@ -28,14 +28,23 @@ def extract_object_key(video_url_or_key: str) -> str:
         return video_url_or_key
     try:
         from urllib.parse import urlparse
+        from backend.core.config import settings
+        
+        bucket_name = "skreener-uploads"
+        if settings.STORAGE_BUCKET_NAME != "#reqd key":
+            bucket_name = settings.STORAGE_BUCKET_NAME
+        elif settings.R2_BUCKET_NAME != "#reqd key":
+            bucket_name = settings.R2_BUCKET_NAME
+            
         path = urlparse(video_url_or_key).path
         parts = path.lstrip("/").split("/")
-        if "uploads" in parts:
-            idx = parts.index("uploads")
-            return "/".join(parts[idx:])
-        if len(parts) >= 2:
-            return "/".join(parts[-2:])
-        return parts[-1]
+        
+        if bucket_name in parts:
+            idx = parts.index(bucket_name)
+            return "/".join(parts[idx + 1:])
+            
+        # Fallback to entire path if bucket name is not a path element
+        return "/".join(parts)
     except Exception:
         return video_url_or_key
 
@@ -50,43 +59,80 @@ async def run_ai_evaluation_background(
     Background worker that runs Gemini AI structures extraction, saves to database,
     and IMMEDIATELY deletes the raw video binary from Supabase storage (Ephemeral).
     """
-    # Trigger AI analysis
-    eval_result = await ai_engine.analyze_submission_async(
-        video_url=video_url,
-        job_title=job_title,
-        job_description=job_description,
-        questions=questions
-    )
+    eval_result = None
+    try:
+        # Trigger AI analysis
+        eval_result = await ai_engine.analyze_submission_async(
+            video_url=video_url,
+            job_title=job_title,
+            job_description=job_description,
+            questions=questions
+        )
+    except Exception as e:
+        logger.error(f"Error during run_ai_evaluation_background analysis: {str(e)}")
+        eval_result = {
+            "status": "Failed",
+            "score_communication": 0,
+            "score_technical": 0,
+            "score_telemetry": 0,
+            "cheating_flagged": False,
+            "cheating_details": f"Analysis failed with error: {str(e)}",
+            "ai_feedback": {
+                "summary": "AI evaluation failed.",
+                "transcript": "Analysis failed.",
+                "weaknesses": []
+            }
+        }
+    finally:
+        # Update the submission database
+        submission = db.submissions.get(submission_id)
+        if submission:
+            if eval_result:
+                # Map statuses to strict PostgreSQL enum values
+                status_val = eval_result.get("status", "Failed")
+                if status_val == "Shortlisted":
+                    status_val = "Completed"
+                elif status_val == "Rejected":
+                    status_val = "Failed"
 
-    # Update the submission in-memory database
-    submission = db.submissions.get(submission_id)
-    if submission:
-        submission["status"] = eval_result["status"]
-        submission["score_communication"] = eval_result.get("score_communication")
-        submission["score_technical"] = eval_result.get("score_technical")
-        submission["score_telemetry"] = eval_result.get("score_telemetry")
-        submission["cheating_flagged"] = eval_result.get("cheating_flagged", False)
-        submission["cheating_details"] = eval_result.get("cheating_details", "")
-        submission["ai_feedback"] = eval_result.get("ai_feedback")
-        submission["updated_at"] = datetime.now(timezone.utc)
-        
-        # WIPE raw video URL reference from DB (preserving structured text summaries only)
-        submission["video_url"] = None
-        db.submissions[submission_id] = submission
+                submission["status"] = status_val
+                submission["score_communication"] = eval_result.get("score_communication")
+                submission["score_technical"] = eval_result.get("score_technical")
+                submission["score_telemetry"] = eval_result.get("score_telemetry")
+                submission["cheating_flagged"] = eval_result.get("cheating_flagged", False)
+                submission["cheating_details"] = eval_result.get("cheating_details", "")
+                submission["ai_feedback"] = eval_result.get("ai_feedback")
+            else:
+                submission["status"] = "Failed"
+                submission["cheating_details"] = "AI evaluation failed unexpectedly."
+                submission["ai_feedback"] = {
+                    "summary": "AI evaluation failed.",
+                    "transcript": "Analysis failed.",
+                    "weaknesses": []
+                }
+            
+            submission["updated_at"] = datetime.now(timezone.utc)
+            # WIPE raw video URL reference from DB (preserving structured text summaries only)
+            submission["video_url"] = None
+            db.submissions[submission_id] = submission
 
         # WIPE raw video binary object(s) from Supabase bucket
         if video_url:
             for url_part in video_url.split(","):
-                object_key = extract_object_key(url_part.strip())
-                storage_service.delete_object(object_key)
+                try:
+                    object_key = extract_object_key(url_part.strip())
+                    storage_service.delete_object(object_key)
+                except Exception as del_err:
+                    logger.error(f"Failed to delete video object {url_part}: {str(del_err)}")
 
         # Email notification to candidate upon successful complete review
-        candidate = db.candidates.get(submission["candidate_id"])
-        if candidate and eval_result["status"] == "Completed":
-            await notification_service.send_submission_completed_email(
-                email=candidate["email"],
-                job_title=job_title
-            )
+        if submission and eval_result and eval_result.get("status") == "Completed":
+            candidate = db.candidates.get(submission["candidate_id"])
+            if candidate:
+                await notification_service.send_submission_completed_email(
+                    email=candidate["email"],
+                    job_title=job_title
+                )
 
 @router.post("/upload-url", response_model=PresignedUrlResponse)
 async def get_upload_url(payload: PresignedUrlRequest):
@@ -227,6 +273,10 @@ async def list_submissions():
                     s.score_technical,
                     s.score_telemetry,
                     s.ai_feedback,
+                    s.resume_requested,
+                    s.cheating_flagged,
+                    s.cheating_details,
+                    c.resume_url as candidate_resume_url,
                     s.created_at,
                     s.updated_at
                 FROM submissions s
@@ -309,8 +359,25 @@ async def update_submission(submission_id: uuid.UUID, payload: SubmissionUpdate)
             detail="Submission not found"
         )
         
-    submission["status"] = payload.status
+    status_val = payload.status
+    if payload.status == "Shortlisted":
+        status_val = "Completed"
+        if not submission.get("resume_requested"):
+            submission["resume_requested"] = True
+            job = db.jobs.get(submission["job_id"])
+            candidate = db.candidates.get(submission["candidate_id"])
+            if candidate and job:
+                await notification_service.send_resume_request_email(
+                    email=candidate["email"],
+                    job_title=job["title"],
+                    recruiter_name="Hiring Team"
+                )
+    elif payload.status == "Rejected":
+        status_val = "Failed"
+
+    submission["status"] = status_val
     submission["updated_at"] = datetime.now(timezone.utc)
+    
     db.submissions[submission_id] = submission
     return submission
 
@@ -329,7 +396,13 @@ async def list_candidate_submissions(candidate_email: str):
     if not candidate:
         return []
 
-    return [s for s in db.submissions.values() if s["candidate_id"] == candidate["id"]]
+    subs = []
+    for s in db.submissions.values():
+        if s["candidate_id"] == candidate["id"]:
+            s_dict = dict(s)
+            s_dict["candidate_resume_url"] = candidate.get("resume_url")
+            subs.append(s_dict)
+    return subs
 
 @router.post("/{sub_id}/ask-resume")
 async def ask_resume(sub_id: uuid.UUID, current_user: dict = Depends(get_current_user)):

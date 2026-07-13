@@ -149,6 +149,15 @@ class NotificationService:
                     <td style="padding: 10px; color: #f97316; font-weight: bold;">{c['score']:.1f}%</td>
                 </tr>
             """
+
+        # Check if the top candidate has a score below 7 (70.0%)
+        performance_notice = ""
+        if candidates and candidates[0]["score"] < 70.0:
+            performance_notice = """
+                <div style="background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 10px; margin-top: 20px; font-size: 13px; font-weight: bold; font-family: sans-serif;">
+                    ⚠️ Notice: The top candidate in this pool scored below 7/10 (70.0%). Overall, the candidates did not perform well.
+                </div>
+            """
             
         html = f"""
             <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 600px;">
@@ -170,6 +179,8 @@ class NotificationService:
                     </tbody>
                 </table>
                 
+                {performance_notice}
+                
                 <p style="margin-top: 20px;">You can access your recruiter console to request candidate resumes directly.</p>
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
                 <p style="color: #a0aec0; font-size: 11px;">Employites Vetting Services.</p>
@@ -187,6 +198,8 @@ class NotificationService:
         print(f"Shortlisted Candidates:")
         for idx, c in enumerate(candidates):
             print(f"  {idx + 1}. {c['name']} ({c['email']}) - Score: {c['score']:.1f}%")
+        if performance_notice:
+            print("⚠️  Notice: The top candidate scored below 7/10. Overall, the candidates did not perform well.")
         print("=" * 60 + "\n")
         return True
 

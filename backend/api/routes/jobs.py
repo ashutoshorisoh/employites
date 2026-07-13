@@ -159,6 +159,9 @@ async def close_job(job_id: uuid.UUID, current_user: dict = Depends(get_current_
             detail="You do not have permission to close this job listing."
         )
         
+    if not job.get("is_active", True):
+        return {"success": True, "message": "Job is already closed.", "shortlisted": []}
+
     job["is_active"] = False
     job["updated_at"] = datetime.now(timezone.utc)
     db.jobs[job_id] = job

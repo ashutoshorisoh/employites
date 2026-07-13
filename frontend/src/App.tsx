@@ -137,10 +137,14 @@ const AppContent: React.FC = () => {
   );
 };
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   return (
     <AuthProvider>
       <AppContent />
+      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </AuthProvider>
   );
 }
