@@ -163,7 +163,7 @@ export const Login: React.FC = () => {
                       maxLength={6}
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="123456"
+                      placeholder="****"
                       className="w-full pl-10 pr-4 py-3 bg-zinc-950/80 border border-zinc-850 focus:border-accentPurple/50 rounded-xl text-zinc-100 placeholder-zinc-200 focus:outline-none transition-all text-xs font-bold tracking-[0.2em] text-center"
                     />
                   </div>

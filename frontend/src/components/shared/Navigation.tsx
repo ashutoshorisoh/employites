@@ -10,9 +10,17 @@ export const Navigation: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    const isCandidateUser = user?.role === 'candidate';
     logout();
     setMobileMenuOpen(false);
-    navigate('/login');
+    if (isCandidateUser) {
+      document.cookie = 'skreener_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0;';
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/');
+    } else {
+      navigate('/login');
+    }
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -27,7 +35,17 @@ export const Navigation: React.FC = () => {
 
         {/* Brand/Logo (Left Side) */}
         <div
-          onClick={() => navigate('/')}
+          onClick={() => {
+            if (user?.role === 'candidate') {
+              navigate('/candidate/dashboard');
+            } else if (user?.role === 'recruiter') {
+              navigate('/recruiter');
+            } else if (user?.role === 'admin') {
+              navigate('/admin');
+            } else {
+              navigate('/');
+            }
+          }}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-accentPurple to-accentCyan flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-105">
@@ -123,7 +141,18 @@ export const Navigation: React.FC = () => {
 
               {/* User Identity Column & Logout Control */}
               <div className="flex items-center gap-4 pl-4 border-l border-zinc-800">
-                <div className="text-right">
+                <div 
+                  className="text-right cursor-pointer"
+                  onClick={() => {
+                    if (user.role === 'candidate') {
+                      navigate('/candidate/dashboard');
+                    } else if (user.role === 'recruiter') {
+                      navigate('/recruiter');
+                    } else if (user.role === 'admin') {
+                      navigate('/admin');
+                    }
+                  }}
+                >
                   <span className="block text-xs font-bold text-zinc-100 truncate max-w-[150px]">{user.name || user.email}</span>
                   <span className={`inline-block text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded mt-0.5 border ${isAdmin ? 'bg-indigo-50 text-indigo-600 border-indigo-200' :
                       isRecruiter ? 'bg-cyan-50 text-cyan-600 border-cyan-200' :
@@ -160,7 +189,19 @@ export const Navigation: React.FC = () => {
           {user && (
             <>
               {/* Profile Details */}
-              <div className="px-3 py-2 bg-zinc-950/30 border border-zinc-900 rounded-lg flex items-center justify-between mb-2">
+              <div 
+                onClick={() => {
+                  if (user.role === 'candidate') {
+                    navigate('/candidate/dashboard');
+                  } else if (user.role === 'recruiter') {
+                    navigate('/recruiter');
+                  } else if (user.role === 'admin') {
+                    navigate('/admin');
+                  }
+                  setMobileMenuOpen(false);
+                }}
+                className="px-3 py-2 bg-zinc-950/30 border border-zinc-900 hover:border-accentPurple/40 rounded-lg flex items-center justify-between mb-2 cursor-pointer transition-all"
+              >
                 <div>
                   <div className="text-xs font-bold text-zinc-100">{user.name || user.email}</div>
                   <div className="text-[10px] text-zinc-200 capitalize">{user.role} tier</div>

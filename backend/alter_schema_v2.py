@@ -34,6 +34,43 @@ def run_migration():
         cursor.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS cheating_flagged BOOLEAN DEFAULT FALSE;")
         cursor.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS cheating_details TEXT DEFAULT NULL;")
         
+        # 4. Email duality triggers
+        print("Adding email duality triggers...")
+        cursor.execute("""
+            CREATE OR REPLACE FUNCTION check_email_duality_users()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM candidates WHERE LOWER(TRIM(email)) = LOWER(TRIM(NEW.email))) THEN
+                    RAISE EXCEPTION 'An account with this email address already exists.';
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        """)
+        cursor.execute("""
+            CREATE OR REPLACE FUNCTION check_email_duality_candidates()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(NEW.email))) THEN
+                    RAISE EXCEPTION 'An account with this email address already exists.';
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        """)
+        cursor.execute("DROP TRIGGER IF EXISTS trigger_check_email_users ON users;")
+        cursor.execute("""
+            CREATE TRIGGER trigger_check_email_users
+            BEFORE INSERT OR UPDATE OF email ON users
+            FOR EACH ROW EXECUTE FUNCTION check_email_duality_users();
+        """)
+        cursor.execute("DROP TRIGGER IF EXISTS trigger_check_email_candidates ON candidates;")
+        cursor.execute("""
+            CREATE TRIGGER trigger_check_email_candidates
+            BEFORE INSERT OR UPDATE OF email ON candidates
+            FOR EACH ROW EXECUTE FUNCTION check_email_duality_candidates();
+        """)
+        
         print("Migration schema alterations completed successfully!")
         cursor.close()
         conn.close()

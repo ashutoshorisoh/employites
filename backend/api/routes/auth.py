@@ -93,12 +93,18 @@ async def request_registration_otp(payload: RegisterOTPRequest):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
         
-    # Check if user already exists
+    # Check if user already exists in either users or candidates schema
     for u in db.users.values():
-        if u["email"] == email:
+        if u["email"].strip().lower() == email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email address is already registered."
+                detail="An account with this email address already exists."
+            )
+    for c in db.candidates.values():
+        if c["email"].strip().lower() == email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
             )
             
     otp = generate_otp()
@@ -149,12 +155,18 @@ async def register_user(payload: UserRegister, response: Response):
     # Clear OTP
     db.otp_store.pop(email, None)
     
-    # 2. Check if user already exists
+    # 2. Check if user already exists in either users or candidates schema
     for u in db.users.values():
-        if u["email"] == email:
+        if u["email"].strip().lower() == email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email address is already registered."
+                detail="An account with this email address already exists."
+            )
+    for c in db.candidates.values():
+        if c["email"].strip().lower() == email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
             )
 
     user_id = uuid.uuid4()
@@ -300,6 +312,14 @@ async def checkin_candidate(payload: CandidateCheckin, response: Response):
         )
 
     # 2. Find or register candidate in candidates table
+    # Check if email is already registered as an employer (recruiter/admin)
+    for u in db.users.values():
+        if u["email"].strip().lower() == email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
+            )
+
     candidate = None
     for c in db.candidates.values():
         if c["email"] == email:
@@ -439,6 +459,15 @@ async def verify_otp(payload: OTPVerify, response: Response):
             break
             
     if not user:
+        # Check if email is already registered as a candidate
+        for c in db.candidates.values():
+            if c["email"].strip().lower() == email:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="An account with this email address already exists."
+                )
+            
+    if not user:
         # Create new user, default role is 'recruiter' (unless admin in email)
         user_id = uuid.uuid4()
         role = "admin" if "admin" in email else "recruiter"
@@ -528,6 +557,22 @@ async def candidate_otp_request(payload: OTPRequest):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required.")
         
+    # Check if registered as employer
+    for u in db.users.values():
+        if u["email"].strip().lower() == email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
+            )
+            
+    # Check if candidate already registered with a password
+    for c in db.candidates.values():
+        if c["email"].strip().lower() == email and c.get("password_hash"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
+            )
+        
     otp = generate_otp()
     expiry = datetime.now(timezone.utc) + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
     
@@ -558,10 +603,23 @@ async def candidate_register(payload: CandidateRegister, response: Response):
         
     db.otp_store.pop(email, None)
     
+    # Check if registered as employer
+    for u in db.users.values():
+        if u["email"].strip().lower() == email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
+            )
+
     # Check if candidate already registered with password
     candidate = None
     for c in db.candidates.values():
         if c["email"] == email:
+            if c.get("password_hash"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="An account with this email address already exists."
+                )
             candidate = c
             break
             

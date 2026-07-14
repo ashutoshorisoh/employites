@@ -136,6 +136,22 @@ export const CandidateInterview: React.FC = () => {
     }
   };
 
+  const handleCandidateSignout = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.error('Failed to trigger server logout:', err);
+    }
+    document.cookie = 'skreener_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0;';
+    localStorage.clear();
+    sessionStorage.clear();
+    logout();
+    navigate('/');
+  };
+
   // Request Registration OTP
   const handleRequestOtp = async () => {
     if (!authEmail) return;
@@ -247,7 +263,7 @@ export const CandidateInterview: React.FC = () => {
           candidate_email: user?.email,
           candidate_first_name: user?.name?.split(' ')[0] || 'Candidate',
           candidate_last_name: user?.name?.split(' ').slice(1).join(' ') || 'User',
-          video_url: completedUploads.join(",")
+          video_url: finalUploads.join(",")
         })
       });
 
@@ -486,7 +502,7 @@ export const CandidateInterview: React.FC = () => {
                     required
                     value={authOtp}
                     onChange={(e) => setAuthOtp(e.target.value)}
-                    placeholder="123456"
+                    placeholder="****"
                     className="flex-1 px-4 py-2.5 bg-zinc-950/60 border border-zinc-800 rounded-xl text-gray-100 text-xs focus:outline-none font-mono font-bold"
                   />
                   <button
@@ -495,7 +511,7 @@ export const CandidateInterview: React.FC = () => {
                     disabled={isAuthSubmitting}
                     className="px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-[10px] font-bold text-zinc-300 hover:text-accentPurple rounded-xl transition-all"
                   >
-                    Change Email
+                    Send OTP
                   </button>
                 </div>
               </div>
@@ -728,10 +744,10 @@ export const CandidateInterview: React.FC = () => {
           <div className="flex gap-3">
 
             {/* <button
-              onClick={fetchCandidateApps}
-              className="p-2.5 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-accentPurple rounded-xl transition-all"
+              onClick={handleCandidateSignout}
+              className="px-4 py-2.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 text-rose-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 text-rose-400" /> Sign Out
             </button> */}
           </div>
         </div>

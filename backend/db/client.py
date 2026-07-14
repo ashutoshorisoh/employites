@@ -83,6 +83,8 @@ class LocalJSONDatabaseFallback:
                     "first_name": v.get("first_name"),
                     "last_name": v.get("last_name"),
                     "resume_url": v.get("resume_url"),
+                    "password_hash": v.get("password_hash"),
+                    "is_verified": v.get("is_verified", False),
                     "created_at": datetime.fromisoformat(v["created_at"]) if "created_at" in v else datetime.now(timezone.utc),
                     "updated_at": datetime.fromisoformat(v["updated_at"]) if "updated_at" in v else datetime.now(timezone.utc)
                 }
@@ -152,6 +154,8 @@ class LocalJSONDatabaseFallback:
                         "first_name": v.get("first_name"),
                         "last_name": v.get("last_name"),
                         "resume_url": v.get("resume_url"),
+                        "password_hash": v.get("password_hash"),
+                        "is_verified": v.get("is_verified", False),
                         "created_at": v["created_at"].isoformat() if isinstance(v.get("created_at"), datetime) else str(v.get("created_at")),
                         "updated_at": v["updated_at"].isoformat() if isinstance(v.get("updated_at"), datetime) else str(v.get("updated_at"))
                     } for k, v in self.candidates.items()

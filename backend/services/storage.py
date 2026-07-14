@@ -84,9 +84,19 @@ class R2StorageService:
         try:
             # Bypass deletion in mock mode
             if settings.STORAGE_ACCESS_KEY_ID == "#reqd key" and settings.R2_ACCESS_KEY_ID == "#reqd key":
+                import sys
+                msg = f"[MOCK STORAGE] Successfully deleted/bypassed object '{object_name}' from bucket '{bucket_name}' in local development mock mode."
+                print(msg, file=sys.stderr, flush=True)
+                print(msg, flush=True)
+                import logging
+                logging.getLogger(__name__).info(msg)
                 return True
                 
             s3_client.delete_object(Bucket=bucket_name, Key=object_name)
+            msg = f"[STORAGE] Successfully deleted object '{object_name}' from bucket '{bucket_name}' via S3 API."
+            print(msg, flush=True)
+            import logging
+            logging.getLogger(__name__).info(msg)
             return True
         except Exception as e:
             import logging

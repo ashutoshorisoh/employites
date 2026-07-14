@@ -235,6 +235,8 @@ export const PricingSectionNew: React.FC<PricingSectionProps> = ({ onSuccess }) 
   const handleAction = () => {
     if (!user) {
       navigate('/login');
+    } else if (user.role === 'candidate') {
+      navigate('/candidate/dashboard');
     }
   };
 

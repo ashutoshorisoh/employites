@@ -120,3 +120,37 @@ CREATE POLICY "Users can view own subscription"
     TO authenticated 
     USING (user_id = auth.uid());
 
+-- ==========================================
+-- EMAIL DUALITY PREVENTION TRIGGERS
+-- ==========================================
+
+CREATE OR REPLACE FUNCTION check_email_duality_users()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM candidates WHERE LOWER(TRIM(email)) = LOWER(TRIM(NEW.email))) THEN
+        RAISE EXCEPTION 'An account with this email address already exists.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_email_duality_candidates()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM(NEW.email))) THEN
+        RAISE EXCEPTION 'An account with this email address already exists.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_check_email_users ON users;
+CREATE TRIGGER trigger_check_email_users
+BEFORE INSERT OR UPDATE OF email ON users
+FOR EACH ROW EXECUTE FUNCTION check_email_duality_users();
+
+DROP TRIGGER IF EXISTS trigger_check_email_candidates ON candidates;
+CREATE TRIGGER trigger_check_email_candidates
+BEFORE INSERT OR UPDATE OF email ON candidates
+FOR EACH ROW EXECUTE FUNCTION check_email_duality_candidates();
+

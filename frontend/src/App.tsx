@@ -39,7 +39,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ('admi
     // If authenticated but role mismatch, redirect to landing logic or appropriate route
     if (user.role === 'admin') return <Navigate to="/admin" replace />;
     if (user.role === 'recruiter') return <Navigate to="/recruiter" replace />;
-    if (user.role === 'candidate') return <Navigate to="/interview" replace />;
+    if (user.role === 'candidate') return <Navigate to="/candidate/dashboard" replace />;
   }
 
   return <>{children}</>;
@@ -53,8 +53,14 @@ const LandingPageWrapper: React.FC = () => {
   const { user, loginAsCandidate } = useAuth();
 
   const handleRecruiterStart = () => {
-    if (user && user.role === 'recruiter') {
-      navigate('/recruiter');
+    if (user) {
+      if (user.role === 'recruiter') {
+        navigate('/recruiter');
+      } else if (user.role === 'candidate') {
+        navigate('/candidate/dashboard');
+      } else if (user.role === 'admin') {
+        navigate('/admin');
+      }
     } else {
       navigate('/login');
     }

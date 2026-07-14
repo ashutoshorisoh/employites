@@ -92,7 +92,10 @@ async def run_ai_evaluation_background(
                 status_val = eval_result.get("status", "Failed")
                 if status_val == "Shortlisted":
                     status_val = "Completed"
-                elif status_val == "Rejected":
+                elif status_val in ["Rejected", "No response provided"]:
+                    status_val = "Failed"
+                
+                if status_val not in ["Pending", "Processing", "Completed", "Failed"]:
                     status_val = "Failed"
 
                 submission["status"] = status_val
@@ -121,7 +124,15 @@ async def run_ai_evaluation_background(
             for url_part in video_url.split(","):
                 try:
                     object_key = extract_object_key(url_part.strip())
-                    storage_service.delete_object(object_key)
+                    logger.info(f"[STORAGE] Requesting deletion of video object: '{object_key}'")
+                    print(f"[STORAGE] Requesting deletion of video object: '{object_key}'", flush=True)
+                    success = storage_service.delete_object(object_key)
+                    if success:
+                        logger.info(f"[STORAGE] Successfully deleted video object: '{object_key}'")
+                        print(f"[STORAGE] Successfully deleted video object: '{object_key}'", flush=True)
+                    else:
+                        logger.error(f"[STORAGE] Failed to delete video object: '{object_key}'")
+                        print(f"[STORAGE] Failed to delete video object: '{object_key}'", flush=True)
                 except Exception as del_err:
                     logger.error(f"Failed to delete video object {url_part}: {str(del_err)}")
 
