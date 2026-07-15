@@ -265,7 +265,7 @@ export const Login: React.FC = () => {
             </form>
 
             {/* autofill sandbox details helper */}
-            <div className="mt-8 pt-6 border-t border-zinc-900/60 text-center">
+            {/* <div className="mt-8 pt-6 border-t border-zinc-900/60 text-center">
               <span className="text-[9px] font-bold tracking-widest text-zinc-400 block mb-2 uppercase">Sandbox Credentials</span>
               <div className="text-[10px] text-zinc-200 space-y-1">
                 <div className="flex justify-between items-center py-2 border-b border-zinc-900/40">
@@ -282,7 +282,7 @@ export const Login: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Candidate Portal Route Redirect */}
             <div className="mt-4 pt-4 border-t border-zinc-900/60 text-center">

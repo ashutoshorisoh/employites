@@ -48,9 +48,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: ('admi
 import { LandingPage } from './pages/LandingPage';
 
 // Landing page wrapper inside Router context to access hooks
-const LandingPageWrapper: React.FC = () => {
+const LandingPageWrapper: React.FC<{ showCandidateAccess?: boolean }> = ({ showCandidateAccess = false }) => {
   const navigate = useNavigate();
-  const { user, loginAsCandidate } = useAuth();
+  const { user } = useAuth();
 
   const handleRecruiterStart = () => {
     if (user) {
@@ -70,7 +70,7 @@ const LandingPageWrapper: React.FC = () => {
     navigate(`/candidate/dashboard?token=${token}`);
   };
 
-  return <LandingPage onRecruiterStart={handleRecruiterStart} onCandidateStart={handleCandidateStart} />;
+  return <LandingPage onRecruiterStart={handleRecruiterStart} onCandidateStart={handleCandidateStart} showCandidateAccess={showCandidateAccess} />;
 };
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -92,7 +92,8 @@ const AppContent: React.FC = () => {
     <Router>
       <MainLayout>
         <Routes>
-            <Route path="/" element={<LandingPageWrapper />} />
+            <Route path="/" element={<LandingPageWrapper showCandidateAccess={false} />} />
+            <Route path="/candidate" element={<LandingPageWrapper showCandidateAccess={true} />} />
             <Route path="/login" element={<Login />} />
 
             <Route
