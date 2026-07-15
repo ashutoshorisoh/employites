@@ -99,9 +99,9 @@ def estimate_decibel_and_word_count(file_paths: list) -> Dict[str, Any]:
     }
 
 class AIEvaluationSchema(BaseModel):
-    communication_score: int = Field(..., description="Communication score (0-100) assessing clarity, expression, vocabulary, confidence.")
-    technical_score: int = Field(..., description="Technical score (0-100) assessing correct usage of concepts, logic, accuracy.")
-    telemetry_score: int = Field(..., description="Telemetry score (0-100) assessing focus, responsiveness, audio quality, and presence.")
+    communication_score: int = Field(..., description="Communication score (0-10) assessing clarity, expression, vocabulary, confidence.")
+    technical_score: int = Field(..., description="Technical score (0-10) assessing correct usage of concepts, logic, accuracy.")
+    telemetry_score: int = Field(..., description="Telemetry score (0-10) assessing focus, responsiveness, audio quality, and presence.")
     summary: str = Field(..., description="High-level evaluation summary.")
     strengths: list[str] = Field(..., description="List of positive traits or correct statements.")
     weaknesses: list[str] = Field(..., description="List of gaps in knowledge or communication lapses.")
@@ -211,22 +211,22 @@ class AIEngine:
                 questions_context += "\n"
 
             prompt = (
-                "You are the Employites AI Evaluation Engine. "
-                "Your task is to analyze candidate interview submissions based on video, audio, or transcript URLs.\n\n"
+                "You are the Employites HR Note-taking & Productivity Copilot. "
+                "Your task is to transcribe candidate interview submissions, generate meeting summaries, and compile structured note-taking sheets based on video, audio, or transcript URLs.\n\n"
                 f"Target Job: {job_title}\n"
                 f"Job Description: {job_description}\n\n"
                 f"{questions_context}"
-                "EVALUATION INSTRUCTIONS:\n"
+                "PROCESSING INSTRUCTIONS:\n"
                 "1. For each video file provided, transcribe the candidate's spoken response completely and accurately.\n"
-                "2. Evaluate whether the candidate's response is relevant to the specific question asked. Compare the answer against the question context.\n"
+                "2. Assess whether the candidate's response is relevant to the specific question asked. Compare the answer against the question context.\n"
                 "3. Assess if the candidate's response is coherent, accurate, and relevant in the context of the overall Target Job title and Job Description.\n"
-                "4. If any answer is irrelevant, off-topic, generic, or completely fails to address the question prompt, explicitly state this in their 'weaknesses' and heavily penalize their 'technical_score' and 'communication_score'.\n"
-                "5. CHEATING AUDIT: Carefully analyze the candidate's responses and behavioral patterns. Look for cheating indicators like reading off scripts or screens (continuous horizontal eye movements, robotic pacing), plagiarism, voice sync mismatches, secondary whispers, or someone typing in the background. If you detect cheating, set 'cheating_flagged' to true and explain the indicators in 'cheating_details'. Else set them to false and empty.\n\n"
+                "4. If any answer is irrelevant, off-topic, generic, or completely fails to address the question prompt, explicitly state this in their 'weaknesses' and reflect this in the computed technical_score and communication_score metrics.\n"
+                "5. FOCUS TELEMETRY AUDIT: Carefully analyze the candidate's responses and behavioral patterns. Look for telemetry indicators like reading off scripts or screens (continuous horizontal eye movements, robotic pacing), plagiarism, voice sync mismatches, secondary whispers, or someone typing in the background. If you detect focus anomalies, set 'cheating_flagged' to true and explain the indicators in 'cheating_details'. Else set them to false and empty.\n\n"
                 "You MUST return your output as a JSON object with these exact keys:\n"
                 "{\n"
-                '  "communication_score": (int 0-100),\n'
-                '  "technical_score": (int 0-100),\n'
-                '  "telemetry_score": (int 0-100),\n'
+                '  "communication_score": (int 0-10),\n'
+                '  "technical_score": (int 0-10),\n'
+                '  "telemetry_score": (int 0-10),\n'
                 '  "cheating_flagged": (boolean true or false),\n'
                 '  "cheating_details": (string explaining the cheat indicators found, or empty string if none),\n'
                 '  "summary": (string summary of candidate performance),\n'

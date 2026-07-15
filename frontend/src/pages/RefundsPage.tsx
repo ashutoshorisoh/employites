@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RotateCcw, ArrowLeft, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Footer } from '../components/shared/Footer';
 
 export const RefundsPage: React.FC = () => {
   const lastUpdated = 'July 11, 2026';
 
   return (
-    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased selection:bg-accentPurple/25 selection:text-white relative overflow-hidden">
+    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased selection:bg-accentPurple/25 selection:text-white relative overflow-hidden flex flex-col justify-between">
       <div className="absolute inset-0 grid-bg-overlay opacity-[0.08] pointer-events-none -z-20"></div>
 
-      <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 relative z-10">
+      <main className="max-w-3xl mx-auto px-6 pt-10 pb-20 relative z-10">
         {/* Back Link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-200 hover:text-accentPurple transition-colors mb-10 group">
+        {/* <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-200 hover:text-accentPurple transition-colors mb-10 group">
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Home
-        </Link>
+        </Link> */}
 
         {/* Header */}
         <header className="mb-12">
@@ -32,7 +33,7 @@ export const RefundsPage: React.FC = () => {
               <h3 className="text-sm font-bold text-emerald-800">Eligible for Refund</h3>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">
-              Within 7 days of purchase and no screening credits have been consumed.
+              Within 7 days of purchase and no transcription credits have been consumed.
             </p>
           </div>
           <div className="rounded-xl bg-rose-50 border border-rose-250 p-5 space-y-2">
@@ -41,7 +42,7 @@ export const RefundsPage: React.FC = () => {
               <h3 className="text-sm font-bold text-rose-800">Not Eligible</h3>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">
-              After 7 days or if any screening credits have been used on active candidate evaluations.
+              After 7 days or if any transcription credits have been used on active candidate interviews.
             </p>
           </div>
         </section>
@@ -50,7 +51,7 @@ export const RefundsPage: React.FC = () => {
         <article className="space-y-10">
           <Section title="1. Overview">
             <p>
-              Employites is a digital B2B SaaS platform providing automated candidate screening services. Because our Service delivers digital infrastructure with usage-based quotas (screening credits), our refund policy is designed to be completely fair and transparent while accurately reflecting the nature of programmatic cloud service delivery.
+              Employites is a digital B2B SaaS platform providing HR note-taking and audio transcription services. Because our Service delivers digital infrastructure with usage-based quotas (transcription credits), our refund policy is designed to be completely fair and transparent while accurately reflecting the nature of programmatic cloud service delivery.
             </p>
           </Section>
 
@@ -60,23 +61,23 @@ export const RefundsPage: React.FC = () => {
             </p>
             <ul>
               <li>The refund request is submitted within 7 calendar days of the original purchase date.</li>
-              <li>Your workspace has not consumed any active screening credits (i.e., no candidate interview assessments have been initiated, recorded, or evaluated).</li>
+              <li>Your workspace has not consumed any active transcription credits (i.e., no candidate interview note-taking sessions have been initiated, recorded, or transcribed).</li>
               <li>The formal request is submitted through our official system support channels.</li>
             </ul>
             <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-amber-50 border border-amber-250 p-4">
               <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-amber-900 leading-relaxed">
-                <strong>Important:</strong> Once an evaluation session begins (a candidate checks into the portal and initiates an active interview), the associated credit for that workspace slot is verified as consumed, and fees for that billing cycle become non-refundable.
+                <strong>Important:</strong> Once a note-taking session begins (a candidate checks into the portal and initiates an active interview), the associated credit for that workspace slot is verified as consumed, and fees for that billing cycle become non-refundable.
               </p>
             </div>
           </Section>
 
           <Section title="3. What Constitutes Credit Consumption">
-            <p>A screening credit is verified as "consumed" when any of the following events occur within your active hiring flow:</p>
+            <p>A transcription credit is verified as "consumed" when any of the following events occur within your active hiring flow:</p>
             <ul>
               <li>A candidate successfully verifies their session token and begins a video interview round.</li>
-              <li>An automated performance analysis has been successfully compiled for a candidate submission.</li>
-              <li>A candidate's temporary session video file has been passed to our cloud pipeline for evaluation.</li>
+              <li>An automated transcription notes summary has been successfully compiled for a candidate submission.</li>
+              <li>A candidate's temporary session video file has been passed to our cloud pipeline for transcription.</li>
             </ul>
             <p>
               Simply establishing job criteria, setting closing dates, or configuring invitation links does <strong className="text-zinc-100 font-extrabold">not</strong> constitute credit consumption.
@@ -87,10 +88,10 @@ export const RefundsPage: React.FC = () => {
             <p>Refunds will <strong className="text-zinc-100 font-extrabold">not</strong> be issued under the following circumstances:</p>
             <ul>
               <li>The 7-day money-back verification window has expired.</li>
-              <li>Active screening credits have been used during the billing lifecycle.</li>
+              <li>Active transcription credits have been used during the billing lifecycle.</li>
               <li>Account suspension or termination due to confirmed violations of our Acceptable Use Policy.</li>
               <li>Partial usage of a billing period (we do not offer pro-rated mid-month refunds).</li>
-              <li>Dissatisfaction with the objective scoring rankings generated by localized analysis systems.</li>
+              <li>Dissatisfaction with the structured notes or transcripts generated by localized systems.</li>
             </ul>
           </Section>
 
@@ -101,8 +102,8 @@ export const RefundsPage: React.FC = () => {
             <ul>
               <li>Your access to existing metrics and pipeline dashboards will continue until the end of the current billing cycle.</li>
               <li>No further recurring charges will be applied to your payment method.</li>
-              <li>Unused screening credits tied to a specific billing cycle do not roll over and are forfeited at expiration.</li>
-              <li>To align with our data privacy policies, your database records will be kept for 30 days after the subscription window closes, after which structural tables are cleared. Note that all underlying video and audio session media files are already permanently deleted immediately following their initial AI evaluation run.</li>
+              <li>Unused transcription credits tied to a specific billing cycle do not roll over and are forfeited at expiration.</li>
+              <li>To align with our data privacy policies, your database records will be kept for 30 days after the subscription window closes, after which structural tables are cleared. Note that all underlying video and audio session media files are already permanently deleted immediately following their initial AI transcription run.</li>
             </ul>
           </Section>
 
@@ -142,13 +143,8 @@ export const RefundsPage: React.FC = () => {
           </Section>
         </article>
 
-        {/* Footer Links */}
-        <footer className="mt-16 pt-8 border-t border-zinc-800/40 flex flex-wrap gap-6 text-[11px] text-zinc-200">
-          <Link to="/terms" className="hover:text-accentPurple transition-colors">Terms of Service</Link>
-          <Link to="/privacy" className="hover:text-accentPurple transition-colors">Privacy Policy</Link>
-          <Link to="/pricing" className="hover:text-accentPurple transition-colors">Pricing</Link>
-        </footer>
       </main>
+      <Footer />
     </div>
   );
 };

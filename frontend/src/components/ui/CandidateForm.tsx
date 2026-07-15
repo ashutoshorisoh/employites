@@ -157,7 +157,7 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ onSubmit, isLoadin
             )}
           </div>
           <span className="text-xs text-gray-400 leading-normal select-none">
-            I consent to video/audio recording and authorize Employites's AI evaluation engine to process my responses.
+            I consent to video/audio recording and authorize Employites's transcription copilot to process and transcribe my responses for note-taking purposes.
           </span>
         </label>
         {errors.agreeToRecording && (

@@ -120,10 +120,10 @@ export const RecruiterDashboard: React.FC = () => {
       if (subRes.ok) {
         const fetchedSubs = await subRes.json();
 
-        // Map submissions to Leaderboard Candidates with jobId and cheating flags
+        // Map submissions to Candidates with jobId and focus telemetry flags
         const mappedCandidates = fetchedSubs.map((s: any) => {
           const feedback = s.ai_feedback || {};
-          const summary = feedback.summary || 'AI evaluation enqueued. Processing responses.';
+          const summary = feedback.summary || 'AI transcription enqueued. Processing responses.';
           const transcript = feedback.transcript || 'No transcript processed yet.';
           const alerts = feedback.weaknesses || [];
 
@@ -184,7 +184,7 @@ export const RecruiterDashboard: React.FC = () => {
             const fetchedSubs = await subRes.json();
             const mappedCandidates = fetchedSubs.map((s: any) => {
               const feedback = s.ai_feedback || {};
-              const summary = feedback.summary || 'AI evaluation enqueued. Processing responses.';
+              const summary = feedback.summary || 'AI transcription enqueued. Processing responses.';
               const transcript = feedback.transcript || 'No transcript processed yet.';
               const alerts = feedback.weaknesses || [];
 
@@ -262,7 +262,7 @@ export const RecruiterDashboard: React.FC = () => {
     setConfirmModal({
       isOpen: true,
       title: 'Close Job Listing',
-      message: 'Are you sure you want to close this job listing? This will lock candidate submissions, rank the leaderboard, and email the top candidate shortlist to your profile email.',
+      message: 'Are you sure you want to close this job listing? This will lock candidate submissions and email the candidate note summary to your profile email.',
       confirmText: 'Close Job',
       confirmButtonClass: 'bg-rose-600 hover:bg-rose-750 font-bold',
       onConfirm: () => handleCloseJob(jobId)
@@ -609,7 +609,7 @@ export const RecruiterDashboard: React.FC = () => {
 
           {/* Job-specific stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
-            <MetricCard title="Completed Screens" value={jobTotalEvaluations} icon={Users} glowColor="purple" />
+            <MetricCard title="Completed Sessions" value={jobTotalEvaluations} icon={Users} glowColor="purple" />
             <MetricCard title="Avg Tech Fluency" value={`${jobAvgTech}/100`} icon={Award} glowColor="cyan" />
             <MetricCard title="Avg Communication" value={`${jobAvgComm}/100`} icon={Star} glowColor="pink" />
             <MetricCard title="Telemetry Alerts" value={jobAnomaliesCount} icon={ShieldAlert} glowColor="amber" change={`${jobAnomaliesCount} flagged`} isPositive={false} />
@@ -629,7 +629,7 @@ export const RecruiterDashboard: React.FC = () => {
               className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${jobSubTab === 'cheatflags' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-accentPurple'
                 }`}
             >
-              Cheat Flags ({jobAnomaliesCount})
+              Telemetry Alerts ({jobAnomaliesCount})
             </button>
           </div>
 
@@ -671,11 +671,11 @@ export const RecruiterDashboard: React.FC = () => {
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="border-b border-zinc-900 bg-zinc-950/60 text-[10px] font-bold text-zinc-200 uppercase tracking-widest">
-                          <th className="py-4 px-6 text-center w-16">Rank</th>
+                          <th className="py-4 px-6 text-center w-16">#</th>
                           <th className="py-4 px-6">Candidate</th>
                           <th className="py-4 px-6">Applied On</th>
-                          <th className="py-4 px-6 text-center">AI Score</th>
-                          <th className="py-4 px-6 text-center">Security Integrity</th>
+                          <th className="py-4 px-6 text-center">Skill Index</th>
+                          <th className="py-4 px-6 text-center">Telemetry Status</th>
                           <th className="py-4 px-6 text-right">Actions</th>
                         </tr>
                       </thead>
@@ -747,10 +747,10 @@ export const RecruiterDashboard: React.FC = () => {
                                 <td className="py-4 px-6 text-center">
                                   {c.cheatingFlagged ? (
                                     <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-rose-50 border border-rose-200 text-[9px] font-extrabold text-rose-700 uppercase cursor-help group/tooltip relative">
-                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> Cheated
+                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> Anomaly Flagged
                                       <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block bg-zinc-950 border border-zinc-900 text-zinc-300 text-[10px] p-3 rounded-lg w-56 text-left leading-normal shadow-2xl z-50 normal-case font-normal">
-                                        <p className="font-bold text-rose-600 mb-1">AI Audit Flagged Cheating:</p>
-                                        {c.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}
+                                        <p className="font-bold text-rose-600 mb-1">Integrity Telemetry Alert:</p>
+                                        {c.cheatingDetails || 'Telemetry flagged focus changes or tab switches during the session.'}
                                       </div>
                                     </div>
                                   ) : (c.status === 'Completed' || c.status === 'Shortlisted') ? (
@@ -828,12 +828,12 @@ export const RecruiterDashboard: React.FC = () => {
                           <li key={idx} className="text-rose-400 font-semibold">{alert}</li>
                         ))}
                       </ul>
-                      <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Integrity Score: {c.scoreTelemetry * 10}/100</span>
+                      <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Focus Score: {c.scoreTelemetry * 10}/100</span>
                     </div>
                   </div>
                 ))}
                 {jobCandidates.filter(c => c.telemetryAlerts.length > 0).length === 0 && (
-                  <p className="text-xs text-zinc-200">No security telemetry anomalies flagged for this job's screenings.</p>
+                  <p className="text-xs text-zinc-200">No security telemetry anomalies flagged for this job's sessions.</p>
                 )}
               </div>
             </div>
@@ -845,14 +845,6 @@ export const RecruiterDashboard: React.FC = () => {
       {!selectedJobId && (
         <>
           <div className="flex justify-end gap-3 mb-6">
-            {/* <button
-              onClick={() => {
-                window.location.href = '/pricing';
-              }}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-zinc-950 border border-zinc-900 hover:border-zinc-800 text-xs font-bold text-zinc-300 hover:text-accentPurple rounded-xl transition-all"
-            >
-              <CreditCard className="w-3.5 h-3.5" /> Buy Plan
-            </button> */}
             <button
               onClick={() => {
                 setCreatedJobToken(null);
@@ -984,7 +976,7 @@ export const RecruiterDashboard: React.FC = () => {
               <div className="flex justify-between items-start pb-5 border-b border-zinc-900 mb-6">
                 <div>
                   <span className="text-[10px] font-extrabold text-accentPurple uppercase tracking-widest bg-accentPurple/10 border border-accentPurple/20 px-2 py-0.5 rounded">
-                    Evaluation Dashboard
+                    Notes & Transcripts Dashboard
                   </span>
                   <h2 className="text-2xl font-extrabold text-zinc-100 tracking-tight mt-2">{selectedCandidate.name}</h2>
                   <p className="text-xs text-zinc-550 mt-1">Role Applied: {selectedCandidate.role}</p>
@@ -1002,8 +994,8 @@ export const RecruiterDashboard: React.FC = () => {
                 <div className="bg-rose-50 border border-rose-250 rounded-xl p-4 mb-5 flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-rose-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider">AI Cheating Telemetry Alert</h4>
-                    <p className="text-[10px] text-zinc-650 mt-1">{selectedCandidate.cheatingDetails || 'Telemetry flagged suspicious eye tracking or script usage.'}</p>
+                    <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider">Focus Telemetry Alert</h4>
+                    <p className="text-[10px] text-zinc-650 mt-1">{selectedCandidate.cheatingDetails || 'Telemetry flagged focus changes or tab switches during the session.'}</p>
                   </div>
                 </div>
               )}
@@ -1014,7 +1006,7 @@ export const RecruiterDashboard: React.FC = () => {
                   <ShieldAlert className="w-5 h-5 text-accentPurple flex-shrink-0" />
                   <div>
                     <h4 className="text-xs font-bold text-zinc-100 uppercase tracking-wider">Ephemeral Video Storage Policy</h4>
-                    <p className="text-[10px] text-zinc-400 mt-0.5">The candidate's raw video file was securely purged from storage immediately after transcription and score parsing.</p>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">The candidate's raw video file was securely purged from storage immediately after transcription and summary generation.</p>
                   </div>
                 </div>
                 {selectedCandidate.candidateResumeUrl && (
@@ -1038,7 +1030,7 @@ export const RecruiterDashboard: React.FC = () => {
                   <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication}/100</span>
                 </div>
                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Anti-Cheat Score</span>
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Focus Telemetry Score</span>
                   <span className={`text-xl font-extrabold ${selectedCandidate.cheatingFlagged ? 'text-rose-400' : 'text-emerald-400'}`}>
                     {selectedCandidate.scoreTelemetry}/100
                   </span>
@@ -1047,7 +1039,7 @@ export const RecruiterDashboard: React.FC = () => {
 
               {/* AI Verbal Transcript */}
               <div className="space-y-2 mb-5">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">AI Verbal Transcript</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Interview Transcript</span>
                 <div className="text-xs text-gray-300 leading-relaxed bg-zinc-950/60 border border-zinc-900 p-4 rounded-xl max-h-48 overflow-y-auto font-mono whitespace-pre-line">
                   {selectedCandidate.transcript || "No transcript available."}
                 </div>
@@ -1122,7 +1114,7 @@ export const RecruiterDashboard: React.FC = () => {
               <div className="bg-emerald-50 border border-emerald-250 rounded-xl p-4 text-center space-y-2">
                 <CheckCircle className="w-8 h-8 text-emerald-600 mx-auto" />
                 <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Job Listing Created Successfully!</h4>
-                <p className="text-[11px] text-zinc-550">Share this unique invitation token with candidates to start async video evaluations:</p>
+                <p className="text-[11px] text-zinc-550">Share this unique invitation token with candidates to start async video interview note sessions:</p>
                 <div className="flex items-center justify-center gap-3 bg-zinc-950 border border-zinc-900 p-2.5 rounded-lg max-w-xs mx-auto">
                   <span className="text-sm font-mono font-bold text-accentCyan">{createdJobToken}</span>
                   <button

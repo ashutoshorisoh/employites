@@ -82,15 +82,15 @@ class NotificationService:
         """
         Dispatches completion email via Resend. Fallback to mock log print.
         """
-        subject = "Employites - Assessment Review Finalized"
+        subject = "Employites - Interview Session Processed"
         html = f"""
             <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px;">
-                <h2 style="color: #00F0FF;">Employites Review</h2>
+                <h2 style="color: #00F0FF;">Employites Note-taking Copilot</h2>
                 <p>Hello,</p>
-                <p>Your asynchronous interview screening responses for the role <strong>{job_title}</strong> have been evaluated successfully.</p>
-                <p>The recruiter dashboard has been updated with your verbal transcripts and rating metrics.</p>
+                <p>Your interview responses for the role <strong>{job_title}</strong> have been transcribed and processed successfully.</p>
+                <p>The recruiter dashboard has been updated with your notes and transcripts.</p>
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
-                <p style="color: #a0aec0; font-size: 11px;">Powered by Employites AI Engine.</p>
+                <p style="color: #a0aec0; font-size: 11px;">Powered by Employites HR Note-taking Copilot.</p>
             </div>
         """
         

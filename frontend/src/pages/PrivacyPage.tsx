@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, ArrowLeft } from 'lucide-react';
+import { Footer } from '../components/shared/Footer';
 
 export const PrivacyPage: React.FC = () => {
   const lastUpdated = 'July 11, 2026';
 
   return (
-    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased selection:bg-accentPurple/25 selection:text-white relative overflow-hidden">
+    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased selection:bg-accentPurple/25 selection:text-white relative overflow-hidden flex flex-col justify-between">
       <div className="absolute inset-0 grid-bg-overlay opacity-[0.08] pointer-events-none -z-20"></div>
 
-      <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 relative z-10">
+      <main className="max-w-3xl mx-auto px-6 pt-10 pb-20 relative z-10">
         {/* Back Link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-200 hover:text-accentPurple transition-colors mb-10 group">
+        {/* <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-200 hover:text-accentPurple transition-colors mb-10 group">
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Home
-        </Link>
+        </Link> */}
 
         {/* Header */}
         <header className="mb-12">
@@ -28,7 +29,7 @@ export const PrivacyPage: React.FC = () => {
         <article className="space-y-10">
           <Section title="1. Introduction">
             <p>
-              Employites ("Company", "we", "us", or "our") is committed to protecting the privacy of our users. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you use our automated candidate screening platform (the "Service").
+              Employites ("Company", "we", "us", or "our") is committed to protecting the privacy of our users. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you use our HR note-taking and productivity copilot platform (the "Service").
             </p>
             <p>
               By using the Service, you consent to the data practices described in this policy. If you do not agree with this policy, please do not use the Service.
@@ -40,18 +41,18 @@ export const PrivacyPage: React.FC = () => {
             <ul>
               <li>Full name, email address, and company name during account registration</li>
               <li>Billing information (processed and stored by Paddle.com, our Merchant of Record)</li>
-              <li>Job listing details, screening criteria, and organizational preferences</li>
+              <li>Job folder details, transcription preferences, and organizational preferences</li>
               <li>Usage analytics and platform interaction data</li>
             </ul>
 
             <h3 className="text-sm font-semibold text-zinc-200 mt-4 mb-2">2.2 Candidate Data</h3>
             <ul>
               <li>Full name, email address, and phone number (as provided during check-in)</li>
-              <li>Resume/CV documents uploaded during the screening process</li>
-              <li><strong className="text-zinc-200">Video and audio recordings</strong> captured during AI-proctored interviews via webcam and microphone</li>
+              <li>Resume/CV documents uploaded during the interview process</li>
+              <li><strong className="text-zinc-200">Video and audio recordings</strong> captured during session-based interviews via webcam and microphone</li>
               <li>AI-generated transcripts of interview responses</li>
-              <li>Anti-cheat telemetry data including tab-switching events, browser focus/blur events, and screen activity logs</li>
-              <li>AI evaluation scores and detailed feedback reports</li>
+              <li>Focus verification telemetry data including tab-switching events, browser focus/blur events, and screen activity logs</li>
+              <li>Transcripts and formatted feedback reports</li>
             </ul>
 
             <h3 className="text-sm font-semibold text-zinc-200 mt-4 mb-2">2.3 Automatically Collected Data</h3>
@@ -65,12 +66,12 @@ export const PrivacyPage: React.FC = () => {
           <Section title="3. How We Use Your Data">
             <p>We process personal data for the following purposes:</p>
             <ul>
-              <li><strong className="text-zinc-200">Service delivery:</strong> To facilitate candidate screening, generate AI evaluations, and provide results to recruiters</li>
-              <li><strong className="text-zinc-200">AI evaluation:</strong> Video recordings and transcripts are processed through the Google Gemini API to generate skill assessments, communication scores, and behavioral analysis</li>
-              <li><strong className="text-zinc-200">Anti-cheat monitoring:</strong> Telemetry data is analyzed to detect potential fraud during assessments</li>
+              <li><strong className="text-zinc-200">Service delivery:</strong> To facilitate candidate interview transcription, generate formatted meeting summaries, and provide notes to recruiters</li>
+              <li><strong className="text-zinc-200">AI Note-taking:</strong> Video recordings and audio are processed through the Google Gemini API to generate text transcripts and structured recruiter summaries</li>
+              <li><strong className="text-zinc-200">Focus verification monitoring:</strong> Telemetry data is analyzed to verify session integrity during sessions</li>
               <li><strong className="text-zinc-200">Account management:</strong> To authenticate users, manage subscriptions, and provide customer support</li>
-              <li><strong className="text-zinc-200">Platform improvement:</strong> Aggregated, anonymized data to improve AI accuracy and product features</li>
-              <li><strong className="text-zinc-200">Communications:</strong> To send transactional emails (OTP codes, interview invitations, result notifications)</li>
+              <li><strong className="text-zinc-200">Platform improvement:</strong> Aggregated, anonymized data to improve transcription accuracy and product features</li>
+              <li><strong className="text-zinc-200">Communications:</strong> To send transactional emails (OTP codes, interview invitations, status notifications)</li>
               <li><strong className="text-zinc-200">Legal compliance:</strong> To comply with applicable laws, regulations, and legal processes</li>
             </ul>
           </Section>
@@ -89,8 +90,8 @@ export const PrivacyPage: React.FC = () => {
                 <tbody className="divide-y divide-zinc-850/50">
                   <tr className="hover:bg-zinc-900/10">
                     <td className="px-4 py-3 text-zinc-200">Google Gemini API</td>
-                    <td className="px-4 py-3 text-zinc-650">AI interview evaluation</td>
-                    <td className="px-4 py-3 text-zinc-650">Video recordings, transcripts</td>
+                    <td className="px-4 py-3 text-zinc-650">AI interview transcription & note-taking</td>
+                    <td className="px-4 py-3 text-zinc-650">Video recordings, audio streams</td>
                   </tr>
                   <tr className="hover:bg-zinc-900/10">
                     <td className="px-4 py-3 text-zinc-200">Supabase</td>
@@ -121,9 +122,9 @@ export const PrivacyPage: React.FC = () => {
             <p>We retain personal data for as long as necessary to fulfill the purposes outlined in this policy:</p>
             <ul>
               <li><strong className="text-zinc-200">Recruiter account data:</strong> Retained for the duration of the active subscription plus 30 days after account deletion</li>
-              <li><strong className="text-zinc-200">Candidate interview recordings:</strong> Retained for 90 days after the screening is completed, then automatically purged</li>
-              <li><strong className="text-zinc-200">AI evaluation reports:</strong> Retained for 12 months or until the recruiting organization deletes the associated job listing</li>
-              <li><strong className="text-zinc-200">Anti-cheat telemetry:</strong> Retained for 30 days after the assessment, then deleted</li>
+              <li><strong className="text-zinc-200">Candidate interview recordings:</strong> Retained for 90 days after the transcription is completed, then automatically purged</li>
+              <li><strong className="text-zinc-200">Transcripts and notes:</strong> Retained for 12 months or until the recruiting organization deletes the associated job listing</li>
+              <li><strong className="text-zinc-200">Focus verification telemetry:</strong> Retained for 30 days after the session, then deleted</li>
               <li><strong className="text-zinc-200">Server & access logs:</strong> Retained for 90 days for security and debugging purposes</li>
             </ul>
           </Section>
@@ -191,13 +192,8 @@ export const PrivacyPage: React.FC = () => {
           </Section>
         </article>
 
-        {/* Footer Links */}
-        <footer className="mt-16 pt-8 border-t border-zinc-800/40 flex flex-wrap gap-6 text-[11px] text-zinc-200">
-          <Link to="/terms" className="hover:text-accentPurple transition-colors">Terms of Service</Link>
-          <Link to="/refunds" className="hover:text-accentPurple transition-colors">Refund Policy</Link>
-          <Link to="/pricing" className="hover:text-accentPurple transition-colors">Pricing</Link>
-        </footer>
       </main>
+      <Footer />
     </div>
   );
 };

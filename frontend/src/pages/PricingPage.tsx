@@ -2,10 +2,11 @@ import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PricingSectionNew } from '../components/shared/PricingSectionNew';
+import { Footer } from '../components/shared/Footer';
 
 export const PricingPage: React.FC = () => {
   return (
-    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased relative overflow-hidden">
+    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased relative overflow-hidden flex flex-col justify-between">
       {/* Grid Background */}
       <div className="absolute inset-0 grid-bg-overlay opacity-[0.15] pointer-events-none -z-20"></div>
 
@@ -15,7 +16,7 @@ export const PricingPage: React.FC = () => {
       {/* Secondary glow — bottom */}
       <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[400px] rounded-full bg-gradient-to-t from-accentCyan/5 to-transparent blur-[120px] pointer-events-none -z-10"></div>
 
-      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-12 relative z-10">
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-12 relative z-10 flex-1">
         {/* ─── Header ─── */}
         <section className="text-center mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-accentPurple/10 border border-accentPurple/20 rounded-full text-[11px] font-bold text-accentPurple tracking-widest uppercase mb-5">
@@ -76,6 +77,7 @@ export const PricingPage: React.FC = () => {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 };

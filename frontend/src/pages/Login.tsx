@@ -133,8 +133,8 @@ export const Login: React.FC = () => {
               </h2>
               <p className="text-[11px] text-zinc-400 mt-1.5 leading-relaxed">
                 {isRegistering
-                  ? (showOtpVerification ? 'Submit the 6-digit verification code.' : 'Setup a corporate account to launch async job pipelines.')
-                  : 'Log in to audit candidates, manage screenings, and tune AI settings.'}
+                  ? (showOtpVerification ? 'Submit the 6-digit verification code.' : 'Setup a corporate account to organize interview notes and transcripts.')
+                  : 'Log in to transcribe interviews, manage candidate notes, and view summaries.'}
               </p>
             </div>
 

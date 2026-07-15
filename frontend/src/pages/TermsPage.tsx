@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, ArrowLeft } from 'lucide-react';
+import { Footer } from '../components/shared/Footer';
 
 export const TermsPage: React.FC = () => {
   const lastUpdated = 'July 11, 2026';
 
   return (
-    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased selection:bg-accentPurple/25 selection:text-white relative overflow-hidden">
+    <div className="min-h-screen text-zinc-800 bg-transparent font-sans antialiased selection:bg-accentPurple/25 selection:text-white relative overflow-hidden flex flex-col justify-between">
       <div className="absolute inset-0 grid-bg-overlay opacity-[0.08] pointer-events-none -z-20"></div>
 
-      <main className="max-w-3xl mx-auto px-6 pt-24 pb-20 relative z-10">
+      <main className="max-w-3xl mx-auto px-6 pt-10 pb-20 relative z-10">
         {/* Back Link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-200 hover:text-accentPurple transition-colors mb-10 group">
+        {/* <Link to="/" className="inline-flex items-center gap-2 text-xs text-zinc-200 hover:text-accentPurple transition-colors mb-10 group">
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Home
-        </Link>
+        </Link> */}
 
         {/* Header */}
         <header className="mb-12">
@@ -37,14 +38,14 @@ export const TermsPage: React.FC = () => {
 
           <Section title="2. Description of Service">
             <p>
-              Employites is a B2B SaaS platform providing automated, objective candidate screening through AI-powered video interviews. The Service flips the traditional application funnel by conducting a resume-less evaluation phase based on technical and communication performance. Core features include:
+              Employites is a B2B SaaS platform providing HR note-taking and productivity copilot features for interview audio transcription. The Service assists hiring teams by generating automated meeting summaries and transcripts to streamline post-interview feedback. Core features include:
             </p>
             <ul>
-              <li>Creating and managing job listings with custom screening criteria.</li>
-              <li>Generating secure candidate invitation tokens for automated webcam/audio assessments.</li>
-              <li>Automated evaluation of candidate video responses utilizing localized AI pipelines.</li>
-              <li>Merit-based, objective score calculation and performance ranking.</li>
-              <li>Conditional profile access: The system restricts resume submission and full details, enabling them only for the top 5 ranked candidates upon the specified job closing date.</li>
+              <li>Creating and managing job folders with custom note-taking templates.</li>
+              <li>Generating secure candidate invitation tokens for automated webcam/audio recording sessions.</li>
+              <li>Automated transcription of candidate responses utilizing speech-to-text models.</li>
+              <li>Structured notes and meeting transcript compilation.</li>
+              <li>Conditional folder access: The system assists in organizing notes, enabling shared review for candidates upon recruiter request.</li>
             </ul>
           </Section>
 
@@ -68,22 +69,22 @@ export const TermsPage: React.FC = () => {
               As a recruiter or employer using Employites, you represent and warrant that:
             </p>
             <ul>
-              <li>You have legal authorization to conduct employment screening in your jurisdiction.</li>
+              <li>You have legal authorization to conduct interviews and transcribe meetings in your jurisdiction.</li>
               <li>All job listings accurately represent genuine employment opportunities.</li>
               <li>You will comply with all applicable employment, anti-discrimination, and data protection laws.</li>
-              <li>You will not use automated scoring as the sole basis for definitive hiring decisions without human review.</li>
-              <li>You will explicitly inform candidates that their initial interview answers are recorded and evaluated by automated software systems.</li>
+              <li>You will not use transcription summaries as the sole basis for definitive hiring decisions, as all final selections are made by humans.</li>
+              <li>You will explicitly inform candidates that their interview answers are recorded and transcribed by automated note-taking tools.</li>
             </ul>
           </Section>
 
           <Section title="5. Candidate Data & Processing Consent">
             <p>
-              Candidates participating in Employites screenings acknowledge and agree to the following data practices:
+              Candidates participating in Employites note-taking sessions acknowledge and agree to the following data practices:
             </p>
             <ul>
-              <li>Video and audio data are captured during the assessment strictly for automated processing and performance analysis.</li>
-              <li><strong>Immediate Deletion Policy:</strong> To ensure privacy, all uploaded webcam and audio interview recordings are processed dynamically. Once the AI analysis pipeline completes its evaluation, the media files are immediately and permanently deleted from our primary application servers.</li>
-              <li>Only the final structured analytical metrics, overall performance scores, and final group rankings are securely retained in our database layer.</li>
+              <li>Video and audio data are captured during the assessment strictly for automated transcription and meeting summary compilation.</li>
+              <li><strong>Immediate Deletion Policy:</strong> To ensure privacy, all uploaded webcam and audio interview recordings are processed dynamically. Once the transcription copilot completes its note-taking run, the media files are immediately and permanently deleted from our primary application servers.</li>
+              <li>Only the final meeting transcripts and structured summary notes are securely retained in our database layer.</li>
               <li>Telemetry indicators (such as browser focus states) may be monitored during the assessment window to verify session integrity.</li>
               <li>Candidates may request deletion of their database records at any time by contacting Employites support.</li>
             </ul>
@@ -154,13 +155,8 @@ export const TermsPage: React.FC = () => {
           </Section>
         </article>
 
-        {/* Footer Links */}
-        <footer className="mt-16 pt-8 border-t border-zinc-800/40 flex flex-wrap gap-6 text-[11px] text-zinc-200">
-          <Link to="/privacy" className="hover:text-accentPurple transition-colors">Privacy Policy</Link>
-          <Link to="/refunds" className="hover:text-accentPurple transition-colors">Refund Policy</Link>
-          <Link to="/pricing" className="hover:text-accentPurple transition-colors">Pricing</Link>
-        </footer>
       </main>
+      <Footer />
     </div>
   );
 };

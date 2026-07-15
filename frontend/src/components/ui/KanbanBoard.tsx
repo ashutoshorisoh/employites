@@ -23,7 +23,7 @@ interface KanbanBoardProps {
 }
 
 const COLUMNS: { id: CandidateCard['status']; label: string; color: string }[] = [
-  { id: 'Applied', label: 'Screening Complete', color: 'border-l-indigo-500' },
+  { id: 'Applied', label: 'Session Transcribed', color: 'border-l-indigo-500' },
   { id: 'Reviewing', label: 'Under Review', color: 'border-l-cyan-500' },
   { id: 'Shortlisted', label: 'Shortlisted', color: 'border-l-emerald-500' },
   { id: 'Rejected', label: 'Archived', color: 'border-l-rose-500' },

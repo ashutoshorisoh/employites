@@ -268,7 +268,7 @@ export const CandidateInterview: React.FC = () => {
       });
 
       if (!res.ok) {
-        throw new Error('Evaluation submission request failed.');
+        throw new Error('Interview transcription submission failed.');
       }
 
       setIsDone(true);
@@ -627,7 +627,7 @@ export const CandidateInterview: React.FC = () => {
               <div>
                 <h4 className="text-xs font-semibold text-gray-300">Privacy Safeguard Active</h4>
                 <p className="text-[10px] text-zinc-200 mt-1 leading-relaxed">
-                  Raw recordings are stored ephemerally. Evaluator parsing runs immediately, following which files are completely purged.
+                  Raw recordings are stored ephemerally. Note processing runs immediately, following which files are completely purged.
                 </p>
               </div>
             </div>
@@ -718,7 +718,7 @@ export const CandidateInterview: React.FC = () => {
                     }}
                     className="glow-btn px-8 py-3.5 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs md:text-sm font-extrabold rounded-xl flex items-center gap-2.5 transition-all duration-300 hover:scale-[1.01]"
                   >
-                    Start Assessment Interview <ChevronRight className="w-4.5 h-4.5" />
+                    Start Interview Session <ChevronRight className="w-4.5 h-4.5" />
                   </button>
                 </div>
               )}
@@ -753,7 +753,7 @@ export const CandidateInterview: React.FC = () => {
         </div>
 
         {/* Applied Assessments section */}
-        <h2 className="text-sm font-bold text-gray-300 uppercase tracking-widest mb-4">My Screenings</h2>
+        <h2 className="text-sm font-bold text-gray-300 uppercase tracking-widest mb-4">My Sessions</h2>
 
         {isLoadingApps ? (
           <div className="py-12 text-center text-zinc-200">
@@ -840,8 +840,8 @@ export const CandidateInterview: React.FC = () => {
         ) : (
           <div className="glass-panel rounded-2xl p-10 text-center">
             <ClipboardList className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-            <p className="text-xs text-zinc-200">No screen submissions registered.</p>
-            <p className="text-[10px] text-zinc-300 mt-1">If you have a job invite code, click the top right button to take an assessment.</p>
+            <p className="text-xs text-zinc-200">No session submissions registered.</p>
+            <p className="text-[10px] text-zinc-300 mt-1">If you have a job invite code, click the top right button to initiate a session.</p>
           </div>
         )}
         {renderAuthModal()}

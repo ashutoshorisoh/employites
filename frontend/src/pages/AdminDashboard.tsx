@@ -361,14 +361,14 @@ export const AdminDashboard: React.FC = () => {
         />
         <MetricCard
           title="Video Ingest Volume"
-          value="2,465 Screenings"
+          value="2,465 Sessions"
           icon={Video}
           change="+34.8%"
           isPositive={true}
           glowColor="purple"
         />
         <MetricCard
-          title="Gemini Evaluation Cost"
+          title="Gemini Processing Cost"
           value="$142.80"
           icon={Cpu}
           change="-4.2% optimized"
@@ -879,7 +879,7 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-slate-900 border border-slate-700 rounded-xl">
                 <div>
                   <span className="font-semibold text-slate-100 block">Gemini 1.5 Flash Engine</span>
-                  <span className="text-[10px] text-slate-300">Async structured evaluation API</span>
+                  <span className="text-[10px] text-slate-300">Async structured transcription API</span>
                 </div>
                 <span className="flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md">
                   <ShieldCheck className="w-3.5 h-3.5" /> 100% OK

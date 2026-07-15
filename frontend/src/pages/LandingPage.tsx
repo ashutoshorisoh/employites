@@ -3,6 +3,7 @@ import { Video, ArrowRight, CheckCircle, Sparkles, Terminal, Cpu, Kanban, Check,
 import { Link, useNavigate } from 'react-router-dom';
 import { PricingSectionNew } from '../components/shared/PricingSectionNew';
 import { useAuth } from '../context/AuthContext';
+import { Footer } from '../components/shared/Footer';
 
 interface LandingPageProps {
   onRecruiterStart: () => void;
@@ -43,18 +44,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
         {/* Header/Hero Section */}
         <header className="pt-24 pb-16 md:pt-36 md:pb-24 text-center space-y-6 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900/40 border border-zinc-800/60 rounded-full text-[10px] font-bold text-accentPurple tracking-widest uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-accentPurple" /> Autonomous Screening Pipeline
+            <Sparkles className="w-3.5 h-3.5 text-accentPurple" /> Interview Audio Transcription Copilot
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-zinc-100">
-            Vetting candidates based on resumes?<br />
+            Wasting hours writing interview notes?<br />
             <span className="bg-gradient-to-r from-accentPurple via-orange-500 to-rose-600 bg-clip-text text-transparent">
-              Majority lie or pad their stack.
+              Automate transcripts & summaries.
             </span>
           </h1>
 
           <p className="text-xs md:text-sm text-zinc-200 max-w-xl mx-auto leading-relaxed">
-            Stop wasting hours filters-vetting resumes. Employites shortlists candidates based on their actual coding skills, communication depth, and anti-cheating telemetry parsed by AI.
+            Stop spending hours drafting manual feedback. Employites transcribes live interviews and organizes structured notes, leaving 100% of the selection and hiring process to natural human recruiters.
           </p>
 
           {/* Quick Actions */}
@@ -69,7 +70,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
               href="#how-it-works"
               className="px-6 py-3 bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-850 text-zinc-400 hover:text-accentPurple hover:border-accentPurple/25 font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
             >
-              See Pipeline
+              See Workflow
             </a>
           </div>
         </header>
@@ -85,7 +86,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
               </span>
               <h3 className="text-lg font-bold text-zinc-100 tracking-tight">Access Invite Panel</h3>
               <p className="text-xs text-zinc-200 leading-relaxed">
-                Invited to record an async screening? Input your invitation code below to launch the webcam recorder.
+                Invited to record an interview session? Input your invitation code below to launch the webcam recorder.
               </p>
             </div>
 
@@ -108,7 +109,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
                 type="submit"
                 className="w-full py-3 bg-zinc-900 hover:bg-accentPurple text-accentPurple hover:text-white border border-zinc-800 hover:border-accentPurple font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
               >
-                Access Screening Screen
+                Access Interview Session
               </button>
             </form>
           </div>
@@ -138,10 +139,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
             {/* Vetting Columns details */}
             <div className="lg:col-span-5 space-y-6">
               <div>
-                <span className="text-[10px] font-bold text-accentPurple tracking-widest uppercase">System Design</span>
-                <h2 className="text-2xl md:text-4xl font-extrabold text-zinc-100 mt-2 tracking-tight">Vetting Vitals</h2>
+                <span className="text-[10px] font-bold text-accentPurple tracking-widest uppercase">Workflow Design</span>
+                <h2 className="text-2xl md:text-4xl font-extrabold text-zinc-100 mt-2 tracking-tight">Note-taking Vitals</h2>
                 <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
-                  We pipeline screening by combining lightweight client-side recordings and autonomous worker evaluation loops.
+                  We simplify meeting documentation by combining lightweight client-side recordings and speech-to-text transcription loops.
                 </p>
               </div>
 
@@ -149,9 +150,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
                 <div className="flex gap-4 p-4 rounded-lg bg-zinc-950/10 border border-zinc-900/40 hover:border-zinc-900 transition-all">
                   <span className="text-xs font-bold text-accentPurple">01/</span>
                   <div>
-                    <h4 className="font-extrabold text-xs text-zinc-100 uppercase tracking-wider mb-1">Define the Prompts</h4>
+                    <h4 className="font-extrabold text-xs text-zinc-100 uppercase tracking-wider mb-1">Define the Structure</h4>
                     <p className="text-[11px] text-zinc-300 leading-relaxed">
-                      Recruiters configure role details, interview questions, and evaluation criteria. The API issues secure applicant tokens.
+                      Recruiters configure role details, interview questions, and custom note templates. The API issues secure applicant tokens.
                     </p>
                   </div>
                 </div>
@@ -169,9 +170,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
                 <div className="flex gap-4 p-4 rounded-lg bg-zinc-950/10 border border-zinc-900/40 hover:border-zinc-900 transition-all">
                   <span className="text-xs font-bold text-accentPurple">03/</span>
                   <div>
-                    <h4 className="font-extrabold text-xs text-zinc-100 uppercase tracking-wider mb-1">AI Ingestion & Grading</h4>
+                    <h4 className="font-extrabold text-xs text-zinc-100 uppercase tracking-wider mb-1">AI-Powered Transcription</h4>
                     <p className="text-[11px] text-zinc-300 leading-relaxed">
-                      Asynchronous workers download clips, evaluate responses, detect fraud alerts, and rank candidate logs on the Leaderboard.
+                      Asynchronous workers transcribe clips, summarize key feedback points, and present organized candidate notes on the Recruiter Dashboard.
                     </p>
                   </div>
                 </div>
@@ -209,83 +210,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
 
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-900 bg-zinc-950 text-zinc-300 relative z-10">
-        <div className="max-w-6xl mx-auto px-6 py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
-
-            {/* Branding/About Column */}
-            <div className="md:col-span-2 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-accentPurple/20 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-accentPurple" />
-                </div>
-                <span className="font-extrabold text-base text-zinc-100 tracking-tight">Employites</span>
-              </div>
-              <p className="text-xs text-zinc-655 leading-relaxed max-w-sm">
-                Autonomous screening pipelines powered by advanced AI evaluation, custom rubrics, and intelligent anti-cheat telemetry.
-              </p>
-            </div>
-
-            {/* Platform / Policies Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-zinc-100 uppercase tracking-wider">Legal & Policies</h4>
-              <ul className="space-y-2 text-xs">
-                <li>
-                  <Link to="/terms" className="hover:text-accentPurple transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/privacy" className="hover:text-accentPurple transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/refunds" className="hover:text-accentPurple transition-colors">
-                    Refund Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Queries & Contact Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-zinc-100 uppercase tracking-wider">Support & Contact</h4>
-              <p className="text-xs text-zinc-655 leading-relaxed">
-                Have questions or need assistance? Feel free to reach out to our team.
-              </p>
-              <div className="flex items-center gap-2 pt-1 text-xs">
-                <Mail className="w-3.5 h-3.5 text-accentPurple flex-shrink-0" />
-                <a href="mailto:support@employites.com" className="text-zinc-100 hover:text-accentPurple transition-colors font-medium">
-                  support@employites.com
-                </a>
-              </div>
-
-              {/* LinkedIn Link (Commented out until account is active)
-              <div className="flex items-center gap-2 pt-2 text-xs">
-                <svg className="w-3.5 h-3.5 text-accentPurple fill-current" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-                <a href="https://linkedin.com/company/employites" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-accentPurple transition-colors">
-                  LinkedIn
-                </a>
-              </div>
-              */}
-            </div>
-
-          </div>
-
-          <div className="mt-12 pt-6 border-t border-zinc-900/60 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-zinc-300">
-            <p>
-              © {new Date().getFullYear()} Employites. All rights reserved.
-            </p>
-            <p>
-              Platform secure checkout processed by Paddle.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );

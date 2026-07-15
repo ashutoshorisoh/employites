@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI App
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Employites automated video candidate screening API.",
+    description="Employites HR note-taking and audio transcription copilot API.",
     version="1.0.0",
     debug=settings.DEBUG
 )
