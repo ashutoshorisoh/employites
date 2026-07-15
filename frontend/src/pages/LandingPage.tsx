@@ -41,42 +41,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
 
-        {/* Header/Hero Section */}
-        <header className="pt-24 pb-16 md:pt-36 md:pb-24 text-center space-y-6 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900/40 border border-zinc-800/60 rounded-full text-[10px] font-bold text-accentPurple tracking-widest uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-accentPurple" /> Interview Audio Transcription Copilot
-          </div>
+        {/* Outermost wrapper container of the Hero section to occupy full viewport depth */}
+        <div className="min-h-[calc(100vh-73px)] flex flex-col items-center justify-center py-12 md:py-16">
+          {/* Header/Hero Section */}
+          <header className="w-full text-center space-y-6 max-w-3xl mx-auto mb-10 md:mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900/40 border border-zinc-800/60 rounded-full text-[10px] font-bold text-accentPurple tracking-widest uppercase">
+              <Sparkles className="w-3.5 h-3.5 text-accentPurple" /> Interview Audio Transcription Copilot
+            </div>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-zinc-100">
-            Wasting hours writing interview notes?<br />
-            <span className="bg-gradient-to-r from-accentPurple via-orange-500 to-rose-600 bg-clip-text text-transparent">
-              Automate transcripts & summaries.
-            </span>
-          </h1>
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-zinc-100">
+              Speed Up Hiring Decisions.<br />
+              <span className="bg-gradient-to-r from-accentPurple via-orange-500 to-rose-600 bg-clip-text text-transparent">
+                Stop Writing Feedback From Memory.
+              </span>
+            </h1>
 
-          <p className="text-xs md:text-sm text-zinc-200 max-w-xl mx-auto leading-relaxed">
-            Stop spending hours drafting manual feedback. Employites transcribes live interviews and organizes structured notes, leaving 100% of the selection and hiring process to natural human recruiters.
-          </p>
+            <p className="text-xs md:text-sm text-zinc-200 max-w-2xl mx-auto leading-relaxed">
+              Recruiters shouldn't multitask while evaluating talent. Employites seamlessly hosts your initial screening rounds—allowing candidates to freely showcase their core skills while our engine records and structures the live session audio. Get instant transcripts and competency-mapped candidate profile data delivered straight to your dashboard, keeping your human hiring managers 100% in control of the final shortlist.
+            </p>
 
-          {/* Quick Actions */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
-            <button
-              onClick={onRecruiterStart}
-              className="glow-btn px-6 py-3 bg-accentPurple text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
-            >
-              Start as Recruiter
-            </button>
-            <a
-              href="#how-it-works"
-              className="px-6 py-3 bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-850 text-zinc-400 hover:text-accentPurple hover:border-accentPurple/25 font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
-            >
-              See Workflow
-            </a>
-          </div>
-        </header>
+            {/* Quick Actions */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+              <button
+                onClick={onRecruiterStart}
+                className="glow-btn px-6 py-3 bg-accentPurple text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
+              >
+                Start as Recruiter
+              </button>
+              <a
+                href="#how-it-works"
+                className="px-6 py-3 bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-850 text-zinc-400 hover:text-accentPurple hover:border-accentPurple/25 font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
+              >
+                See Workflow
+              </a>
+            </div>
+          </header>
 
-        {/* Portal Access & Mockup Layout Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-24 items-stretch">
+          {/* Portal Access & Mockup Layout Grid */}
+          <section className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
           {/* Candidate Access Card */}
           <div className="lg:col-span-5 p-8 rounded-xl border border-zinc-800/80 bg-zinc-950/80 shadow-sm flex flex-col justify-between relative overflow-hidden">
@@ -131,9 +133,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onRecruiterStart, onCa
             </div>
           </div>
         </section>
+      </div>
 
         {/* Feature Workflow */}
-        <section id="how-it-works" className="border-t border-zinc-900/50 py-24">
+        <section id="how-it-works" className="scroll-mt-20 border-t border-zinc-900/50 py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
             {/* Vetting Columns details */}

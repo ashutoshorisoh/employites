@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { KanbanBoard, CandidateCard } from '../components/ui/KanbanBoard';
 import { toast } from 'react-toastify';
 import { MetricCard } from '../components/ui/MetricCard';
@@ -48,9 +49,42 @@ export interface Candidate {
 export const RecruiterDashboard: React.FC = () => {
   const [allCandidates, setAllCandidates] = useState<Candidate[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [jobSubTab, setJobSubTab] = useState<'candidates' | 'cheatflags'>('candidates');
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedJobId = searchParams.get('jobId') || null;
+  const jobSubTab = (searchParams.get('tab') as 'candidates' | 'cheatflags') || 'candidates';
+  const selectedCandidateId = searchParams.get('candidateId') || null;
+
+  const selectedCandidate = selectedCandidateId
+    ? allCandidates.find(c => c.id === selectedCandidateId) || null
+    : null;
+
+  const selectJob = (id: string | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (id) {
+      next.set('jobId', id);
+    } else {
+      next.delete('jobId');
+      next.delete('candidateId');
+    }
+    setSearchParams(next);
+  };
+
+  const changeTab = (tab: 'candidates' | 'cheatflags') => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', tab);
+    setSearchParams(next);
+  };
+
+  const selectCandidate = (candidate: Candidate | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (candidate) {
+      next.set('candidateId', candidate.id);
+    } else {
+      next.delete('candidateId');
+    }
+    setSearchParams(next);
+  };
 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -217,13 +251,6 @@ export const RecruiterDashboard: React.FC = () => {
             }));
 
             setAllCandidates(mappedCandidates);
-
-            // Update the selected candidate modal state if open, so the detail drawer updates live!
-            setSelectedCandidate(prev => {
-              if (!prev) return null;
-              const updated = mappedCandidates.find((c: any) => c.id === prev.id);
-              return updated || prev;
-            });
           }
         } catch (err) {
           console.error('Silent poll failed:', err);
@@ -467,7 +494,7 @@ export const RecruiterDashboard: React.FC = () => {
       setJobs(prev => prev.filter(j => j.id !== jobId));
       // If the deleted job was currently open in Kanban, close it
       if (selectedJobId === jobId) {
-        setSelectedJobId(null);
+        selectJob(null);
       }
       toast.success('Job listing deleted successfully.');
     } catch (err) {
@@ -566,7 +593,7 @@ export const RecruiterDashboard: React.FC = () => {
       {selectedJobId && selectedJob && (
         <div>
           <button
-            onClick={() => { setSelectedJobId(null); setJobSubTab('candidates'); }}
+            onClick={() => selectJob(null)}
             className="flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-accentPurple mb-5 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" /> Back to All Jobs
@@ -610,22 +637,22 @@ export const RecruiterDashboard: React.FC = () => {
           {/* Job-specific stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
             <MetricCard title="Completed Sessions" value={jobTotalEvaluations} icon={Users} glowColor="purple" />
-            <MetricCard title="Avg Tech Fluency" value={`${jobAvgTech}/100`} icon={Award} glowColor="cyan" />
-            <MetricCard title="Avg Communication" value={`${jobAvgComm}/100`} icon={Star} glowColor="pink" />
+            <MetricCard title="Avg Tech Fluency" value={`${jobAvgTech}/10`} icon={Award} glowColor="cyan" />
+            <MetricCard title="Avg Communication" value={`${jobAvgComm}/10`} icon={Star} glowColor="pink" />
             <MetricCard title="Telemetry Alerts" value={jobAnomaliesCount} icon={ShieldAlert} glowColor="amber" change={`${jobAnomaliesCount} flagged`} isPositive={false} />
           </div>
 
           {/* Sub-tabs: Candidates / Cheat Flags */}
           <div className="flex gap-1 bg-zinc-950/80 border border-zinc-900 rounded-xl p-1 w-fit mb-6">
             <button
-              onClick={() => setJobSubTab('candidates')}
+              onClick={() => changeTab('candidates')}
               className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${jobSubTab === 'candidates' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-accentPurple'
                 }`}
             >
               Candidate Board
             </button>
             <button
-              onClick={() => setJobSubTab('cheatflags')}
+              onClick={() => changeTab('cheatflags')}
               className={`px-5 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${jobSubTab === 'cheatflags' ? 'bg-gradient-to-r from-accentPurple to-accentCyan text-white shadow-lg' : 'text-zinc-400 hover:text-accentPurple'
                 }`}
             >
@@ -647,14 +674,14 @@ export const RecruiterDashboard: React.FC = () => {
                 const topCandidate = sorted[0];
                 if (topCandidate) {
                   const avgScore = (topCandidate.scoreTechnical + topCandidate.scoreCommunication) / 2;
-                  if (avgScore < 70) {
+                   if (avgScore < 7) {
                     return (
                       <div className="flex items-start gap-3 p-4 bg-rose-950/20 border border-rose-500/25 rounded-2xl text-xs text-rose-300 font-bold mb-4 shadow-sm">
                         <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                         <div>
                           <p className="font-extrabold text-rose-200">Candidate Pool Warning</p>
                           <p className="font-semibold text-rose-450 mt-1 leading-relaxed text-[11px]">
-                            Notice: The top candidate in this pool scored below 7/10 ({avgScore.toFixed(1)}%). Overall, the candidates did not perform well.
+                             Notice: The top candidate in this pool has a skill index below 7/10 ({avgScore.toFixed(1)}/10). Overall, the candidates did not perform well.
                           </p>
                         </div>
                       </div>
@@ -732,15 +759,15 @@ export const RecruiterDashboard: React.FC = () => {
                                     </span>
                                   ) : (
                                     <div className="inline-flex flex-col items-center">
-                                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${c.cheatingFlagged
-                                        ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
-                                        : parseInt(avgScore) >= 70
-                                          ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
-                                          : 'bg-orange-950/40 text-orange-400 border-orange-500/20'
-                                        }`}>
-                                        {c.cheatingFlagged ? 'Flagged' : `${avgScore}%`}
-                                      </span>
-                                      <span className="text-[8px] text-zinc-200 mt-1 font-mono">T: {c.scoreTechnical}% | C: {c.scoreCommunication}%</span>
+                                       <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${c.cheatingFlagged
+                                         ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
+                                         : parseFloat(avgScore) >= 7
+                                           ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
+                                           : 'bg-orange-950/40 text-orange-400 border-orange-500/20'
+                                         }`}>
+                                         {c.cheatingFlagged ? 'Flagged' : `${avgScore}/10`}
+                                       </span>
+                                       <span className="text-[8px] text-zinc-200 mt-1 font-mono">T: {c.scoreTechnical}/10 | C: {c.scoreCommunication}/10</span>
                                     </div>
                                   )}
                                 </td>
@@ -763,7 +790,7 @@ export const RecruiterDashboard: React.FC = () => {
                                 </td>
                                 <td className="py-3.5 text-right flex items-center justify-end gap-2 pr-2">
                                   <button
-                                    onClick={() => setSelectedCandidate(c as any)}
+                                    onClick={() => selectCandidate(c as any)}
                                     className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-extrabold text-zinc-300 hover:text-accentPurple rounded-lg transition-all"
                                   >
                                     Review
@@ -828,7 +855,7 @@ export const RecruiterDashboard: React.FC = () => {
                           <li key={idx} className="text-rose-400 font-semibold">{alert}</li>
                         ))}
                       </ul>
-                      <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Focus Score: {c.scoreTelemetry * 10}/100</span>
+                       <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Focus Score: {c.scoreTelemetry}/10</span>
                     </div>
                   </div>
                 ))}
@@ -897,8 +924,10 @@ export const RecruiterDashboard: React.FC = () => {
                     {/* View Candidates Button */}
                     <button
                       onClick={() => {
-                        setSelectedJobId(job.id);
-                        setJobSubTab('candidates');
+                        const next = new URLSearchParams(searchParams);
+                        next.set('jobId', job.id);
+                        next.set('tab', 'candidates');
+                        setSearchParams(next);
                       }}
                       className="w-full mb-4 py-2.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl text-xs font-bold text-accentPurple hover:text-accentCyan flex items-center justify-center gap-2 transition-all"
                     >
@@ -969,7 +998,7 @@ export const RecruiterDashboard: React.FC = () => {
       {/* Candidate Profile Drawer */}
       {selectedCandidate && (
         <div className="fixed inset-0 z-50 flex items-center justify-end">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setSelectedCandidate(null)}></div>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => selectCandidate(null)}></div>
 
           <div className="relative w-full max-w-2xl h-full bg-zinc-950 border-l border-zinc-900 p-8 overflow-y-auto flex flex-col justify-between shadow-2xl z-10">
             <div>
@@ -982,7 +1011,7 @@ export const RecruiterDashboard: React.FC = () => {
                   <p className="text-xs text-zinc-550 mt-1">Role Applied: {selectedCandidate.role}</p>
                 </div>
                 <button
-                  onClick={() => setSelectedCandidate(null)}
+                  onClick={() => selectCandidate(null)}
                   className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-rose-500 transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -1021,20 +1050,20 @@ export const RecruiterDashboard: React.FC = () => {
 
               {/* AI Scores Row */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Technical Skills</span>
-                  <span className="text-xl font-extrabold text-accentCyan">{selectedCandidate.scoreTechnical}/100</span>
-                </div>
-                <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Communication</span>
-                  <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication}/100</span>
-                </div>
-                <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Focus Telemetry Score</span>
-                  <span className={`text-xl font-extrabold ${selectedCandidate.cheatingFlagged ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {selectedCandidate.scoreTelemetry}/100
-                  </span>
-                </div>
+                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
+                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Technical Skills</span>
+                   <span className="text-xl font-extrabold text-accentCyan">{selectedCandidate.scoreTechnical}/10</span>
+                 </div>
+                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
+                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Communication</span>
+                   <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication}/10</span>
+                 </div>
+                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
+                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Focus Telemetry Score</span>
+                   <span className={`text-xl font-extrabold ${selectedCandidate.cheatingFlagged ? 'text-rose-400' : 'text-emerald-400'}`}>
+                     {selectedCandidate.scoreTelemetry}/10
+                   </span>
+                 </div>
               </div>
 
               {/* AI Verbal Transcript */}
@@ -1075,7 +1104,7 @@ export const RecruiterDashboard: React.FC = () => {
                 <button
                   onClick={() => {
                     handleStatusChange(selectedCandidate.id, 'Rejected');
-                    setSelectedCandidate(null);
+                    selectCandidate(null);
                   }}
                   className="px-4 py-2 border border-rose-250 hover:bg-rose-50 text-rose-600 text-xs font-bold rounded-xl transition-all"
                 >
@@ -1084,7 +1113,7 @@ export const RecruiterDashboard: React.FC = () => {
                 <button
                   onClick={() => {
                     handleStatusChange(selectedCandidate.id, 'Shortlisted');
-                    setSelectedCandidate(null);
+                    selectCandidate(null);
                   }}
                   className="glow-btn px-4.5 py-2 bg-gradient-to-r from-accentPurple to-accentCyan text-white text-xs font-bold rounded-xl"
                 >

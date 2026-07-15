@@ -123,6 +123,11 @@ const AppContent: React.FC = () => {
             />
 
             <Route
+              path="/interview"
+              element={<CandidateInterview />}
+            />
+
+            <Route
               path="/candidate/profile"
               element={
                 <ProtectedRoute allowedRoles={['candidate']}>

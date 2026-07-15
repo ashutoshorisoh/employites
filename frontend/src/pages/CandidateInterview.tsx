@@ -17,8 +17,12 @@ export const CandidateInterview: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Search parameters for pre-filling token from landing page redirect
-  const urlToken = searchParams.get('token') || '';
+  // Search parameters for pre-filling token from landing page redirect or direct link
+  const urlToken = searchParams.get('token') || 
+                    searchParams.get('invite') || 
+                    searchParams.get('code') || 
+                    searchParams.get('invitation') || 
+                    '';
 
   // Auth modal states
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -38,6 +42,8 @@ export const CandidateInterview: React.FC = () => {
   const [previewJob, setPreviewJob] = useState<any | null>(null);
   const [isJdLoading, setIsJdLoading] = useState(false);
   const [jdError, setJdError] = useState('');
+  const [errorType, setErrorType] = useState<'invalid' | 'closed' | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Active Interview states
   const [activeInterviewStarted, setActiveInterviewStarted] = useState(false);
@@ -60,18 +66,29 @@ export const CandidateInterview: React.FC = () => {
     if (!token) return;
     setIsJdLoading(true);
     setJdError('');
+    setErrorType(null);
+    setErrorMessage(null);
     try {
       const res = await fetch(`${API_BASE_URL}/jobs/token/${token.toUpperCase().trim()}`);
       if (res.ok) {
         const job = await res.json();
-        setPreviewJob(job);
+        if (!job.is_active) {
+          setPreviewJob(null);
+          setErrorType('closed');
+          setErrorMessage("Applications Closed. The recruiter has stopped accepting responses for this specific role.");
+        } else {
+          setPreviewJob(job);
+        }
       } else {
         setPreviewJob(null);
-        setJdError('Invalid invite token. Please verify code.');
+        setErrorType('invalid');
+        setErrorMessage("Invalid or Broken Link. The link you followed is incorrect or the job context does not exist. Please check with your recruiter.");
       }
     } catch (e) {
       console.error(e);
-      setJdError('Failed to fetch job details.');
+      setPreviewJob(null);
+      setErrorType('invalid');
+      setErrorMessage("Failed to contact the verification server. Please check your connection.");
     } finally {
       setIsJdLoading(false);
     }
@@ -96,12 +113,19 @@ export const CandidateInterview: React.FC = () => {
     }
   };
 
-  // Initial token loading
+  // Initial token loading on mount and search parameter updates
   useEffect(() => {
-    if (urlToken) {
-      fetchJdByToken(urlToken);
+    const rawToken = searchParams.get('token') || 
+                     searchParams.get('invite') || 
+                     searchParams.get('code') || 
+                     searchParams.get('invitation') || 
+                     '';
+    const cleanedToken = rawToken.toUpperCase().trim();
+    if (cleanedToken) {
+      setTokenInput(cleanedToken);
+      fetchJdByToken(cleanedToken);
     }
-  }, [urlToken]);
+  }, [searchParams]);
 
   // Load apps if logged in as candidate and not taking interview
   useEffect(() => {
@@ -671,8 +695,8 @@ export const CandidateInterview: React.FC = () => {
             </div>
 
             <span className={`text-[10.5px] font-extrabold px-3 py-1 rounded-md border uppercase tracking-wider ${isClosed
-              ? 'bg-zinc-900/80 text-zinc-550 border-zinc-800'
-              : 'bg-orange-950/40 text-orange-400 border-orange-500/20 shadow-[0_0_8px_rgba(249,115,22,0.08)]'
+              ? ' text-zinc-550 border-zinc-800'
+              : ' text-orange-400 border-orange-500/20 shadow-[0_0_8px_rgba(249,115,22,0.08)]'
               }`}>
               {isClosed ? 'Closed' : 'Active Invitation'}
             </span>
@@ -886,12 +910,30 @@ export const CandidateInterview: React.FC = () => {
                 <button
                   onClick={() => fetchJdByToken(tokenInput)}
                   disabled={isJdLoading}
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-accentPurple rounded-xl transition-all"
+                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-accentPurple rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Verify Code
+                  {isJdLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-accentPurple" /> Verifying...
+                    </>
+                  ) : (
+                    'Verify Code'
+                  )}
                 </button>
               </div>
             </div>
+
+            {errorMessage && (
+              <div className="p-4 bg-rose-950/25 border border-rose-500/30 rounded-xl flex items-start gap-2.5 text-xs text-zinc-200 leading-relaxed font-semibold">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-extrabold text-black block mb-0.5">
+                    {errorType === 'closed' ? 'Session Inactive' : 'Verification Failure'}
+                  </span>
+                  {errorMessage}
+                </div>
+              </div>
+            )}
 
             <div className="pt-4 border-t border-zinc-900/60 text-center">
               <span className="text-xs text-zinc-200 block mb-3">Or check applied status:</span>

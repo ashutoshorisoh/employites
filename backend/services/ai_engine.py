@@ -163,9 +163,9 @@ class AIEngine:
                 logger.info("Gemini API Key is '#reqd key'. Returning dynamic mock structured evaluation.")
                 return {
                     "status": "Completed",
-                    "score_communication": 80,
-                    "score_technical": 75,
-                    "score_telemetry": 90,
+                    "score_communication": 8,
+                    "score_technical": 7,
+                    "score_telemetry": 9,
                     "cheating_flagged": False,
                     "cheating_details": "",
                     "no_speech_detected": False,
