@@ -177,7 +177,7 @@ class AIEngine:
                     }
                 }
 
-            model_name = "gemini-2.5-flash"
+            model_name = "gemini-3.6-flash"
 
             # 3. Upload downloaded media to Gemini File API
             for lf in local_files:
