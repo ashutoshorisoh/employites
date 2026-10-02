@@ -110,7 +110,7 @@ export const RecruiterDashboard: React.FC = () => {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   // Job Editor form states
@@ -263,8 +263,8 @@ export const RecruiterDashboard: React.FC = () => {
   }, [allCandidates]);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    setAllCandidates(prev => prev.map(c => c.id === id ? { 
-      ...c, 
+    setAllCandidates(prev => prev.map(c => c.id === id ? {
+      ...c,
       status: newStatus,
       resumeRequested: newStatus === 'Shortlisted' ? true : c.resumeRequested
     } : c));
@@ -674,14 +674,14 @@ export const RecruiterDashboard: React.FC = () => {
                 const topCandidate = sorted[0];
                 if (topCandidate) {
                   const avgScore = (topCandidate.scoreTechnical + topCandidate.scoreCommunication) / 2;
-                   if (avgScore < 7) {
+                  if (avgScore < 7) {
                     return (
                       <div className="flex items-start gap-3 p-4 bg-rose-950/20 border border-rose-500/25 rounded-2xl text-xs text-rose-300 font-bold mb-4 shadow-sm">
                         <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                         <div>
                           <p className="font-extrabold text-rose-200">Candidate Pool Warning</p>
                           <p className="font-semibold text-rose-450 mt-1 leading-relaxed text-[11px]">
-                             Notice: The top candidate in this pool has a skill index below 7/10 ({avgScore.toFixed(1)}/10). Overall, the candidates did not perform well.
+                            Notice: The top candidate in this pool has a skill index below 7/10 ({avgScore.toFixed(1)}/10). Overall, the candidates did not perform well.
                           </p>
                         </div>
                       </div>
@@ -759,15 +759,15 @@ export const RecruiterDashboard: React.FC = () => {
                                     </span>
                                   ) : (
                                     <div className="inline-flex flex-col items-center">
-                                       <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${c.cheatingFlagged
-                                         ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
-                                         : parseFloat(avgScore) >= 7
-                                           ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
-                                           : 'bg-orange-950/40 text-orange-400 border-orange-500/20'
-                                         }`}>
-                                         {c.cheatingFlagged ? 'Flagged' : `${avgScore}/10`}
-                                       </span>
-                                       <span className="text-[8px] text-zinc-200 mt-1 font-mono">T: {c.scoreTechnical}/10 | C: {c.scoreCommunication}/10</span>
+                                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${c.cheatingFlagged
+                                        ? 'bg-rose-950/40 text-rose-400 border-rose-500/20'
+                                        : parseFloat(avgScore) >= 7
+                                          ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20'
+                                          : 'bg-orange-950/40 text-orange-400 border-orange-500/20'
+                                        }`}>
+                                        {c.cheatingFlagged ? 'Flagged' : `${avgScore}/10`}
+                                      </span>
+                                      <span className="text-[8px] text-zinc-200 mt-1 font-mono">T: {c.scoreTechnical}/10 | C: {c.scoreCommunication}/10</span>
                                     </div>
                                   )}
                                 </td>
@@ -855,7 +855,7 @@ export const RecruiterDashboard: React.FC = () => {
                           <li key={idx} className="text-rose-400 font-semibold">{alert}</li>
                         ))}
                       </ul>
-                       <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Focus Score: {c.scoreTelemetry}/10</span>
+                      <span className="text-[10px] text-zinc-200 block pt-1">Telemetry Focus Score: {c.scoreTelemetry}/10</span>
                     </div>
                   </div>
                 ))}
@@ -1050,20 +1050,20 @@ export const RecruiterDashboard: React.FC = () => {
 
               {/* AI Scores Row */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Technical Skills</span>
-                   <span className="text-xl font-extrabold text-accentCyan">{selectedCandidate.scoreTechnical}/10</span>
-                 </div>
-                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Communication</span>
-                   <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication}/10</span>
-                 </div>
-                 <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
-                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Focus Telemetry Score</span>
-                   <span className={`text-xl font-extrabold ${selectedCandidate.cheatingFlagged ? 'text-rose-400' : 'text-emerald-400'}`}>
-                     {selectedCandidate.scoreTelemetry}/10
-                   </span>
-                 </div>
+                <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Technical Skills</span>
+                  <span className="text-xl font-extrabold text-accentCyan">{selectedCandidate.scoreTechnical}/10</span>
+                </div>
+                <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Communication</span>
+                  <span className="text-xl font-extrabold text-accentPurple">{selectedCandidate.scoreCommunication}/10</span>
+                </div>
+                <div className="bg-zinc-950/60 border border-zinc-900 rounded-xl p-4 text-center">
+                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Focus Telemetry Score</span>
+                  <span className={`text-xl font-extrabold ${selectedCandidate.cheatingFlagged ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    {selectedCandidate.scoreTelemetry}/10
+                  </span>
+                </div>
               </div>
 
               {/* AI Verbal Transcript */}
@@ -1343,13 +1343,13 @@ export const RecruiterDashboard: React.FC = () => {
       {/* Reusable Confirmation Modal */}
       {confirmModal.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-black/85 backdrop-blur-xs" 
+          <div
+            className="absolute inset-0 bg-black/85 backdrop-blur-xs"
             onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
           ></div>
           <div className="relative glass-panel rounded-2xl w-full max-w-md p-6 overflow-hidden shadow-2xl z-10 space-y-5">
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-accentPurple to-accentCyan"></div>
-            
+
             <div className="flex items-center gap-3 border-b border-zinc-900 pb-3">
               <AlertTriangle className="w-6 h-6 text-amber-500" />
               <h3 className="font-extrabold text-md text-zinc-100">{confirmModal.title}</h3>
@@ -1373,9 +1373,8 @@ export const RecruiterDashboard: React.FC = () => {
                   confirmModal.onConfirm();
                   setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 }}
-                className={`px-4.5 py-2 text-white text-xs font-bold rounded-xl transition-all hover:scale-[1.01] ${
-                  confirmModal.confirmButtonClass || 'bg-gradient-to-r from-accentPurple to-accentCyan'
-                }`}
+                className={`px-4.5 py-2 text-white text-xs font-bold rounded-xl transition-all hover:scale-[1.01] ${confirmModal.confirmButtonClass || 'bg-gradient-to-r from-accentPurple to-accentCyan'
+                  }`}
               >
                 {confirmModal.confirmText || 'Confirm'}
               </button>

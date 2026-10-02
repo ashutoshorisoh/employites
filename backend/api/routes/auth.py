@@ -207,7 +207,8 @@ async def register_user(payload: UserRegister, response: Response):
         key="skreener_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        # secure=True,  # For production only (HTTPS)
+        secure=False,   # For local development (HTTP)
         samesite="lax",
         max_age=86400,
         path="/"
@@ -266,7 +267,8 @@ async def login_user(payload: UserLogin, response: Response):
         key="skreener_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        # secure=True,  # For production only (HTTPS)
+        secure=False,   # For local development (HTTP)
         samesite="lax",
         max_age=86400,
         path="/"
@@ -383,7 +385,8 @@ async def checkin_candidate(payload: CandidateCheckin, response: Response):
         key="skreener_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        # secure=True,  # For production only (HTTPS)
+        secure=False,   # For local development (HTTP)
         samesite="lax",
         max_age=86400,
         path="/"
@@ -501,7 +504,8 @@ async def verify_otp(payload: OTPVerify, response: Response):
         key="skreener_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        # secure=True,  # For production only (HTTPS)
+        secure=False,   # For local development (HTTP)
         samesite="lax",
         max_age=86400,
         path="/"
@@ -656,7 +660,8 @@ async def candidate_register(payload: CandidateRegister, response: Response):
         key="skreener_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        # secure=True,  # For production only (HTTPS)
+        secure=False,   # For local development (HTTP)
         samesite="lax",
         max_age=86400,
         path="/"
@@ -693,7 +698,8 @@ async def candidate_login(payload: CandidateLogin, response: Response):
         key="skreener_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        # secure=True,  # For production only (HTTPS)
+        secure=False,   # For local development (HTTP)
         samesite="lax",
         max_age=86400,
         path="/"

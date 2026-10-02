@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           role: userData.role as UserRole,
           name: userData.name
         };
-        
+
         set({ token: 'session_active', user: activeUser, loading: false });
       } else {
         set({ token: null, user: null, loading: false });
@@ -68,7 +68,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         body: JSON.stringify({ email, password }),
         credentials: 'include'
       });
-      
+
       const data = await res.json();
       if (!res.ok) {
         return { success: false, message: data.detail || 'Incorrect email or password.' };
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role: data.role as UserRole,
         name: data.name
       };
-      
+
       set({ token: 'session_active', user: activeUser });
       return { success: true, message: 'Logged in successfully.', role: activeUser.role };
     } catch (error) {
@@ -111,7 +111,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role: data.role as UserRole,
         name: data.name
       };
-      
+
       set({ token: 'session_active', user: activeUser });
       return { success: true, message: 'Registered and logged in successfully.', role: activeUser.role };
     } catch (error) {
@@ -165,7 +165,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         name: data.name || `${firstName} ${lastName}`,
         candidateToken: tokenInput
       };
-      
+
       set({ token: 'session_active', user: activeUser });
       return { success: true, role: 'candidate' };
     } catch (error) {
@@ -182,7 +182,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         body: JSON.stringify({ email, password }),
         credentials: 'include'
       });
-      
+
       const data = await res.json();
       if (!res.ok) {
         return { success: false, message: data.detail || 'Incorrect candidate credentials.' };
@@ -195,7 +195,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role: 'candidate',
         name: data.name
       };
-      
+
       set({ token: 'session_active', user: activeUser });
       return { success: true, message: 'Logged in successfully.', role: 'candidate' };
     } catch (error) {
@@ -225,7 +225,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role: 'candidate',
         name: data.name
       };
-      
+
       set({ token: 'session_active', user: activeUser });
       return { success: true, message: 'Registered successfully.', role: 'candidate' };
     } catch (error) {
